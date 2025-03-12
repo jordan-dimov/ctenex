@@ -1,0 +1,25 @@
+[project]
+name = "ctenex"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Your Name",email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic (>=2.10.6,<3.0.0)",
+    "sortedcontainers (>=2.4.0,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.9.10"
+pyright = "^1.1.396"
+coverage = "^7.6.12"
+pytest = "^8.3.5"
+
