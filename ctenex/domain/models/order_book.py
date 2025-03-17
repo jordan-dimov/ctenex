@@ -33,6 +33,8 @@ class OrderBook:
         # For market orders, set price to infinity (buy) or 0 (sell) to ensure matching
         if order.order_type == OrderType.MARKET:
             order.price = float("inf") if order.side == OrderSide.BUY else 0.0
+        elif order.price is None:
+            raise ValueError("Order must have a price")
 
         self.orders_by_id[order.id] = order
 
@@ -52,6 +54,9 @@ class OrderBook:
             return None
 
         order = self.orders_by_id[order_id]
+
+        if order.price is None:
+            raise ValueError("Order cannot be cancelled as it has no price")
 
         # Remove from price queue
         if order.side == OrderSide.BUY:

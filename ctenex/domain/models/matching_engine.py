@@ -1,3 +1,5 @@
+from loguru import logger
+
 from ctenex.domain.contract_codes import ContractCode
 from ctenex.domain.models.order import Order, OrderSide, OrderStatus, OrderType
 from ctenex.domain.models.order_book import OrderBook
@@ -14,11 +16,10 @@ class MatchingEngine:
 
     def add_order(self, order: Order) -> list[Trade]:
         """Add an order to the book and return any trades that result."""
+        logger.debug(f"Adding order: {order}")
+
         if order.remaining_quantity is None:
             order.remaining_quantity = order.quantity
-
-        # Temp
-        print(f"Adding order: {order}")
 
         # Try to match the order first
         if order.side == OrderSide.BUY:
@@ -44,7 +45,7 @@ class MatchingEngine:
         trades = []
         order_book = self.order_books[buy_order.contract_id]
 
-        while buy_order.remaining_quantity > 0:
+        while buy_order.remaining_quantity and buy_order.remaining_quantity > 0:
             # Check if there are any asks to match against
             if not order_book.asks or not order_book.ask_queues:
                 break
@@ -100,12 +101,11 @@ class MatchingEngine:
                 order_book.ask_queues.pop(best_ask_price)
                 order_book.asks.pop(best_ask_price)
 
-        # Temp
         if len(trades) > 0:
-            print(f"Matched order {buy_order.id}")
-            print(f"Generated {len(trades)} trades:")
+            logger.debug(f"Matched order with ID {buy_order.id}")
+            logger.debug(f"Generated {len(trades)} trades:")
             for trade in trades:
-                print(trade)
+                logger.debug(trade)
 
         return trades
 
@@ -113,7 +113,7 @@ class MatchingEngine:
         trades = []
         order_book = self.order_books[sell_order.contract_id]
 
-        while sell_order.remaining_quantity > 0:
+        while sell_order.remaining_quantity and sell_order.remaining_quantity > 0:
             # Check if there are any bids to match against
             if not order_book.bids or not order_book.bid_queues:
                 break
@@ -171,9 +171,9 @@ class MatchingEngine:
 
         # Temp
         if len(trades) > 0:
-            print(f"Matched order {sell_order.id}")
-            print(f"Generated {len(trades)} trades:")
+            logger.debug(f"Matched order with ID {sell_order.id}")
+            logger.debug(f"Generated {len(trades)} trades:")
             for trade in trades:
-                print(trade)
+                logger.debug(trade)
 
         return trades

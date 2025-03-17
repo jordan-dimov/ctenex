@@ -27,13 +27,13 @@ class Trade(BaseModel):
 
     def __str__(self) -> str:
         return (
-            "Trade(\n"
-            f"id={self.id}\n"
-            f"contract_id={self.contract_id}\n"
-            f"buy_order_id={self.buy_order_id}\n"
-            f"sell_order_id={self.sell_order_id}\n"
-            f"price={self.price}\n"
-            f"quantity={self.quantity}\n"
-            f"timestamp={self.timestamp}\n"
+            "Trade("
+            f"id={self.id}, "
+            f"contract_id={self.contract_id}, "
+            f"buy_order_id={self.buy_order_id}, "
+            f"sell_order_id={self.sell_order_id}, "
+            f"price={self.price}, "
+            f"quantity={self.quantity}, "
+            f"timestamp={self.timestamp}"
             ")"
         )
