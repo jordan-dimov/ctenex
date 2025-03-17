@@ -4,6 +4,8 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from ctenex.domain.contract_codes import ContractCode
+
 
 class OrderSide(str, Enum):
     BUY = "buy"
@@ -24,7 +26,7 @@ class OrderStatus(str, Enum):
 
 class Order(BaseModel):
     id: UUID = Field(default_factory=uuid4)
-    contract_id: str
+    contract_id: ContractCode
     trader_id: str
     side: OrderSide
     order_type: OrderType
@@ -48,3 +50,19 @@ class Order(BaseModel):
             }
         }
     )
+
+    def __str__(self) -> str:
+        return (
+            "Order("
+            f"id={self.id}, "
+            f"contract_id={self.contract_id}, "
+            f"trader_id={self.trader_id}, "
+            f"side={self.side}, "
+            f"order_type={self.order_type}, "
+            f"price={self.price}, "
+            f"quantity={self.quantity}, "
+            f"remaining_quantity={self.remaining_quantity}, "
+            f"created_at={self.created_at}, "
+            f"status={self.status}"
+            ")"
+        )

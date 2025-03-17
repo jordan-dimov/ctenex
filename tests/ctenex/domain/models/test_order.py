@@ -1,13 +1,14 @@
 from datetime import datetime
 from uuid import UUID
 
+from ctenex.domain.contract_codes import ContractCode
 from ctenex.domain.models.order import Order, OrderSide, OrderStatus, OrderType
 
 
 class TestOrder:
     def test_order_creation(self):
         order = Order(
-            contract_id="UK-POWER-MAR-2025",
+            contract_id=ContractCode.MAR_100_MW,
             trader_id="trader123",
             side=OrderSide.BUY,
             order_type=OrderType.LIMIT,
@@ -17,7 +18,7 @@ class TestOrder:
         )
 
         assert isinstance(order.id, UUID)
-        assert order.contract_id == "UK-POWER-MAR-2025"
+        assert order.contract_id == ContractCode.MAR_100_MW
         assert order.trader_id == "trader123"
         assert order.side == OrderSide.BUY
         assert order.order_type == OrderType.LIMIT
