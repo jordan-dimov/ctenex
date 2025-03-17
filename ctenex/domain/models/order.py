@@ -48,3 +48,19 @@ class Order(BaseModel):
             }
         }
     )
+
+    def __str__(self) -> str:
+        return (
+            "Order(\n"
+            f"id={self.id}\n"
+            f"contract_id={self.contract_id}\n"
+            f"trader_id={self.trader_id}\n"
+            f"side={self.side}\n"
+            f"order_type={self.order_type}\n"
+            f"price={self.price}\n"
+            f"quantity={self.quantity}\n"
+            f"remaining_quantity={self.remaining_quantity}\n"
+            f"created_at={self.created_at}\n"
+            f"status={self.status}\n"
+            ")"
+        )

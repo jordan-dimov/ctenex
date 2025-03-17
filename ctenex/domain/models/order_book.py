@@ -1,11 +1,9 @@
 from collections import defaultdict
-from typing import List, Optional
 from uuid import UUID
 
 from sortedcontainers import SortedDict
 
-from ctenex.domain.models.order import Order
-from ctenex.domain.models.trade import Trade
+from ctenex.domain.models.order import Order, OrderSide, OrderStatus, OrderType
 
 
 class OrderBook:
@@ -24,20 +22,51 @@ class OrderBook:
         self.ask_queues = defaultdict(list)  # price -> list of orders
 
         # Fast lookup for orders by ID
-        self.orders_by_id = {}
+        self.orders_by_id: dict[UUID, Order] = {}
 
-    def add_order(self, order: Order) -> List[Trade]:
-        """
-        Add an order to the order book.
+    def get_orders(self) -> list[Order]:
+        return list(self.orders_by_id.values())
 
-        For limit orders, add to the appropriate side if it doesn't match immediately.
-        For market orders, match against existing orders immediately.
+    def add_order(self, order: Order) -> UUID:
+        """Add an order to the appropriate side of the book."""
 
-        Returns a list of trades that were executed.
-        """
-        # Implementation logic here...
-        return []
+        # For market orders, set price to infinity (buy) or 0 (sell) to ensure matching
+        if order.order_type == OrderType.MARKET:
+            order.price = float("inf") if order.side == OrderSide.BUY else 0.0
 
-    def cancel_order(self, order_id: UUID) -> Optional[Order]:
-        """Cancel an order and remove it from the order book."""
-        ...
+        self.orders_by_id[order.id] = order
+
+        if order.side == OrderSide.BUY:
+            # Store negative price for descending sort
+            self.bids[-order.price] = True
+            self.bid_queues[order.price].append(order)
+        else:
+            self.asks[order.price] = True
+            self.ask_queues[order.price].append(order)
+
+        return order.id
+
+    def cancel_order(self, order_id: UUID) -> Order | None:
+        """Cancel an order and remove it from the book."""
+        if order_id not in self.orders_by_id:
+            return None
+
+        order = self.orders_by_id[order_id]
+
+        # Remove from price queue
+        if order.side == OrderSide.BUY:
+            self.bid_queues[order.price].remove(order)
+            if not self.bid_queues[order.price]:
+                del self.bid_queues[order.price]
+                del self.bids[-order.price]
+        else:
+            self.ask_queues[order.price].remove(order)
+            if not self.ask_queues[order.price]:
+                del self.ask_queues[order.price]
+                del self.asks[order.price]
+
+        # Remove from ID lookup
+        del self.orders_by_id[order_id]
+
+        order.status = OrderStatus.CANCELLED
+        return order
