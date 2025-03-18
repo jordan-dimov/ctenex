@@ -1,9 +1,12 @@
+from typing import Type
+from uuid import UUID
+
 from loguru import logger
 
 from ctenex.domain.contract_codes import ContractCode
-from ctenex.domain.models.order import Order, OrderSide, OrderStatus, OrderType
-from ctenex.domain.models.order_book import OrderBook
 from ctenex.domain.models.trade import Trade
+from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
+from ctenex.domain.order_book import OrderBook
 
 
 class MatchingEngine:
@@ -11,10 +14,16 @@ class MatchingEngine:
         self.order_books: dict[ContractCode, OrderBook] = {}
         self.trades: list[Trade] = []
 
-        for contract_code in ContractCode:
+    def start(self, contract_codes: Type[ContractCode] = ContractCode):
+        """Start the matching engine and create order books for all contract codes."""
+        for contract_code in contract_codes:
             self.order_books[contract_code] = OrderBook(contract_code)
 
-    def add_order(self, order: Order) -> list[Trade]:
+    def stop(self):
+        """Stop the matching engine and clear all order books."""
+        self.order_books.clear()
+
+    def add_order(self, order: Order) -> UUID:
         """Add an order to the book and return any trades that result."""
         logger.debug(f"Adding order: {order}")
 
@@ -33,7 +42,7 @@ class MatchingEngine:
 
         self.trades.extend(trades)
 
-        return trades
+        return order.id
 
     def get_orders(self, contract_id: ContractCode) -> list[Order]:
         return self.order_books[contract_id].get_orders()

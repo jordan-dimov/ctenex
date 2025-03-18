@@ -4,8 +4,8 @@ from uuid import UUID, uuid4
 import pytest
 
 from ctenex.domain.contract_codes import ContractCode
-from ctenex.domain.models.order import Order, OrderSide, OrderStatus, OrderType
-from ctenex.domain.models.order_book import OrderBook
+from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
+from ctenex.domain.order_book import OrderBook
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def order_book():
 def sample_limit_buy_order():
     return Order(
         id=uuid4(),
-        contract_id=ContractCode.MAR_100_MW,
+        contract_id=ContractCode.UK_BL_MAR_25,
         trader_id="TRADER1",
         side=OrderSide.BUY,
         order_type=OrderType.LIMIT,
@@ -31,7 +31,7 @@ def sample_limit_buy_order():
 def sample_limit_sell_order():
     return Order(
         id=uuid4(),
-        contract_id=ContractCode.MAR_100_MW,
+        contract_id=ContractCode.UK_BL_MAR_25,
         trader_id="TRADER2",
         side=OrderSide.SELL,
         order_type=OrderType.LIMIT,
@@ -43,7 +43,7 @@ def sample_limit_sell_order():
 
 class TestOrderBook:
     def setup_method(self):
-        self.order_book = OrderBook(contract_id=ContractCode.MAR_100_MW)
+        self.order_book = OrderBook(contract_id=ContractCode.UK_BL_MAR_25)
 
     def test_add_limit_buy_order(self, sample_limit_buy_order):
         """Test adding a limit buy order to the book."""
@@ -80,7 +80,7 @@ class TestOrderBook:
         # Setup
         market_order = Order(
             id=uuid4(),
-            contract_id=ContractCode.MAR_100_MW,
+            contract_id=ContractCode.UK_BL_MAR_25,
             trader_id="TRADER1",
             side=OrderSide.BUY,
             order_type=OrderType.MARKET,
@@ -101,7 +101,7 @@ class TestOrderBook:
         # Setup
         market_order = Order(
             id=uuid4(),
-            contract_id=ContractCode.MAR_100_MW,
+            contract_id=ContractCode.UK_BL_MAR_25,
             trader_id="TRADER1",
             side=OrderSide.SELL,
             order_type=OrderType.MARKET,
@@ -122,7 +122,7 @@ class TestOrderBook:
         # Setup
         order = Order(
             id=uuid4(),
-            contract_id=ContractCode.MAR_100_MW,
+            contract_id=ContractCode.UK_BL_MAR_25,
             trader_id="TRADER1",
             side=OrderSide.BUY,
             order_type=OrderType.LIMIT,
@@ -186,7 +186,7 @@ class TestOrderBook:
         # Setup
         order = Order(
             id=uuid4(),
-            contract_id=ContractCode.MAR_100_MW,
+            contract_id=ContractCode.UK_BL_MAR_25,
             trader_id="TRADER1",
             side=OrderSide.BUY,
             order_type=OrderType.LIMIT,
@@ -234,7 +234,7 @@ class TestOrderBook:
         # Setup
         order1 = Order(
             id=uuid4(),
-            contract_id=ContractCode.MAR_100_MW,
+            contract_id=ContractCode.UK_BL_MAR_25,
             trader_id="TRADER1",
             side=OrderSide.BUY,
             order_type=OrderType.LIMIT,
@@ -244,7 +244,7 @@ class TestOrderBook:
         )
         order2 = Order(
             id=uuid4(),
-            contract_id=ContractCode.MAR_100_MW,
+            contract_id=ContractCode.UK_BL_MAR_25,
             trader_id="TRADER2",
             side=OrderSide.BUY,
             order_type=OrderType.LIMIT,
@@ -267,7 +267,7 @@ class TestOrderBook:
         # Setup
         order1 = Order(
             id=uuid4(),
-            contract_id=ContractCode.MAR_100_MW,
+            contract_id=ContractCode.UK_BL_MAR_25,
             trader_id="TRADER1",
             side=OrderSide.SELL,
             order_type=OrderType.LIMIT,
@@ -277,7 +277,7 @@ class TestOrderBook:
         )
         order2 = Order(
             id=uuid4(),
-            contract_id=ContractCode.MAR_100_MW,
+            contract_id=ContractCode.UK_BL_MAR_25,
             trader_id="TRADER2",
             side=OrderSide.SELL,
             order_type=OrderType.LIMIT,
