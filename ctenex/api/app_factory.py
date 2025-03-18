@@ -14,11 +14,11 @@ settings = get_app_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Load the ML model
+    # Instantiate the matching engine
     app.state.matching_engine = MatchingEngine()
     app.state.matching_engine.start()
     yield
-    # Clean up the ML models and release the resources
+    # Clean up all order books
     app.state.matching_engine.stop()
 
 
