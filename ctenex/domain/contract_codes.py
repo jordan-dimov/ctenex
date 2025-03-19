@@ -2,4 +2,4 @@ from enum import StrEnum
 
 
 class ContractCode(StrEnum):
-    MAR_100_MW = "MAR_100_MW"
+    UK_BL_MAR_25 = "UK-BL-MAR-25"
