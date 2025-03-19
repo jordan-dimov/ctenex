@@ -1,53 +1,14 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-import pytest
-
 from ctenex.domain.contract_codes import ContractCode
 from ctenex.domain.matching_engine import MatchingEngine
 from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
-
-
-@pytest.fixture
-def limit_buy_order():
-    return Order(
-        id=uuid4(),
-        contract_id=ContractCode.UK_BL_MAR_25,
-        trader_id="TRADER1",
-        side=OrderSide.BUY,
-        order_type=OrderType.LIMIT,
-        price=100.0,
-        quantity=10.0,
-        created_at=datetime.now(UTC),
-    )
-
-
-@pytest.fixture
-def limit_sell_order():
-    return Order(
-        id=uuid4(),
-        contract_id=ContractCode.UK_BL_MAR_25,
-        trader_id="TRADER2",
-        side=OrderSide.SELL,
-        order_type=OrderType.LIMIT,
-        price=100.0,
-        quantity=5.0,
-        created_at=datetime.now(UTC),
-    )
-
-
-@pytest.fixture
-def second_limit_sell_order():
-    return Order(
-        id=uuid4(),
-        contract_id=ContractCode.UK_BL_MAR_25,
-        trader_id="TRADER2",
-        side=OrderSide.SELL,
-        order_type=OrderType.LIMIT,
-        price=100.0,
-        quantity=15.0,
-        created_at=datetime.now(UTC),
-    )
+from tests.fixtures import (  # noqa F401
+    limit_buy_order,
+    limit_sell_order,
+    second_limit_sell_order,
+)
 
 
 class TestMatchingEngine:
@@ -60,7 +21,10 @@ class TestMatchingEngine:
         """Stop the matching engine after each test."""
         self.matching_engine.stop()
 
-    def test_add_limit_buy_order_no_match(self, limit_buy_order):
+    def test_add_limit_buy_order_no_match(
+        self,
+        limit_buy_order,  # noqa F811
+    ):
         """Test adding a limit buy order with no matching sells."""
 
         # Setup
@@ -77,7 +41,10 @@ class TestMatchingEngine:
             ContractCode.UK_BL_MAR_25
         )
 
-    def test_add_limit_sell_order_no_match(self, limit_sell_order):
+    def test_add_limit_sell_order_no_match(
+        self,
+        limit_sell_order,  # noqa F811
+    ):
         """Test adding a limit sell order with no matching buys."""
 
         # Setup
@@ -94,7 +61,11 @@ class TestMatchingEngine:
             ContractCode.UK_BL_MAR_25
         )
 
-    def test_match_limit_orders_exact_quantity(self, limit_buy_order, limit_sell_order):
+    def test_match_limit_orders_exact_quantity(
+        self,
+        limit_buy_order,  # noqa F811
+        limit_sell_order,  # noqa F811
+    ):
         """Test matching limit orders with exact quantities."""
 
         # Setup
@@ -115,7 +86,9 @@ class TestMatchingEngine:
         assert len(self.matching_engine.get_orders(ContractCode.UK_BL_MAR_25)) == 0
 
     def test_match_limit_orders_with_partial_fill_of_buy_order(
-        self, limit_buy_order, limit_sell_order
+        self,
+        limit_buy_order,  # noqa F811
+        limit_sell_order,  # noqa F811
     ):
         """Test matching limit orders where one buy order is partially filled."""
 
@@ -139,7 +112,9 @@ class TestMatchingEngine:
         assert limit_buy_order in orders
 
     def test_match_limit_orders_with_partial_fill_of_sell_order(
-        self, limit_buy_order, second_limit_sell_order
+        self,
+        limit_buy_order,  # noqa F811
+        second_limit_sell_order,  # noqa F811
     ):
         """Test matching limit orders where one sell order is partially filled."""
 
@@ -165,7 +140,10 @@ class TestMatchingEngine:
         assert len(orders) == 1
         assert second_limit_sell_order in orders
 
-    def test_match_market_buy_order(self, limit_sell_order):
+    def test_match_market_buy_order(
+        self,
+        limit_sell_order,  # noqa F811
+    ):
         """Test matching a market buy order against existing sell orders."""
 
         # Setup
@@ -191,7 +169,10 @@ class TestMatchingEngine:
         # Book should be empty
         assert len(self.matching_engine.get_orders(ContractCode.UK_BL_MAR_25)) == 0
 
-    def test_match_market_sell_order(self, limit_buy_order):
+    def test_match_market_sell_order(
+        self,
+        limit_buy_order,  # noqa F811
+    ):
         """Test matching a market sell order against existing buy orders."""
 
         # Setup
@@ -309,7 +290,11 @@ class TestMatchingEngine:
         assert buy_order.status == OrderStatus.FILLED
         assert buy_order.remaining_quantity == 0.0
 
-    def test_get_trades(self, limit_buy_order, limit_sell_order):
+    def test_get_trades(
+        self,
+        limit_buy_order,  # noqa F811
+        limit_sell_order,  # noqa F811
+    ):
         """Test retrieving trades for a specific contract."""
 
         # Setup

@@ -10,7 +10,7 @@ class OrderAddRequest(BaseModel):
     trader_id: str
     side: OrderSide
     order_type: OrderType
-    price: float
+    price: float | None = None
     quantity: float
 
 
@@ -20,6 +20,6 @@ class OrderAddResponse(BaseModel):
     trader_id: str
     side: OrderSide
     order_type: OrderType
-    price: float
+    price: float | None = None
     quantity: float
     status: OrderStatus
