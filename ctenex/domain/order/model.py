@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ctenex.domain.contract_codes import ContractCode
+from ctenex.domain.contracts import ContractCode
 
 
 class OrderSide(str, Enum):
