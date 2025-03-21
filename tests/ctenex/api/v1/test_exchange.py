@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
 
-from ctenex.domain.contract_codes import ContractCode
+from ctenex.domain.contracts import ContractCode
 from ctenex.domain.order.model import OrderSide, OrderStatus, OrderType
 from ctenex.domain.order.schemas import OrderAddRequest
 from tests.fixtures import (

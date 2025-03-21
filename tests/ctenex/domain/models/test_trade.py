@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from ctenex.domain.models.trade import Trade
+from ctenex.domain.trade.model import Trade
 
 
 class TestTrade:

@@ -3,10 +3,10 @@ from uuid import UUID
 
 from loguru import logger
 
-from ctenex.domain.contract_codes import ContractCode
-from ctenex.domain.models.trade import Trade
+from ctenex.domain.contracts import ContractCode
 from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
 from ctenex.domain.order_book import OrderBook
+from ctenex.domain.trade.model import Trade
 
 
 class MatchingEngine:
