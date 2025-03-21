@@ -36,7 +36,8 @@ class MatchingEngine:
         else:
             trades = self._match_sell_order(order)
 
-        # If order still has quantity remaining, add to book (only for limit orders)
+        # If order still has quantity remaining, add to book
+        # (only for limit orders) <- TODO: review this
         if order.remaining_quantity > 0 and order.order_type == OrderType.LIMIT:
             self.order_books[order.contract_id].add_order(order)
 
