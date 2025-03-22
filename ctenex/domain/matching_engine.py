@@ -3,10 +3,10 @@ from uuid import UUID
 
 from loguru import logger
 
-from ctenex.domain.contract_codes import ContractCode
-from ctenex.domain.models.trade import Trade
+from ctenex.domain.contracts import ContractCode
 from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
 from ctenex.domain.order_book import OrderBook
+from ctenex.domain.trade.model import Trade
 
 
 class MatchingEngine:
@@ -36,7 +36,8 @@ class MatchingEngine:
         else:
             trades = self._match_sell_order(order)
 
-        # If order still has quantity remaining, add to book (only for limit orders)
+        # If order still has quantity remaining, add to book
+        # (only for limit orders) <- TODO: review this
         if order.remaining_quantity > 0 and order.order_type == OrderType.LIMIT:
             self.order_books[order.contract_id].add_order(order)
 

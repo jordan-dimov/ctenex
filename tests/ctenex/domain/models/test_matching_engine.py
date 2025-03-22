@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from ctenex.domain.contract_codes import ContractCode
+from ctenex.domain.contracts import ContractCode
 from ctenex.domain.matching_engine import MatchingEngine
 from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
 from tests.fixtures import (  # noqa F401

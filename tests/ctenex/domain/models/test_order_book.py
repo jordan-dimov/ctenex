@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from ctenex.domain.contract_codes import ContractCode
+from ctenex.domain.contracts import ContractCode
 from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
 from ctenex.domain.order_book import OrderBook
 
