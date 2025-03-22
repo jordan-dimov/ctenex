@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from ctenex.api.app_factory import create_app
-from ctenex.domain.contract_codes import ContractCode
+from ctenex.domain.contracts import ContractCode
 from ctenex.domain.order.model import Order, OrderSide, OrderType
 
 

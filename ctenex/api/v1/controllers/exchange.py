@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Request
 
+from ctenex.domain.contracts import ContractCode
 from ctenex.domain.order.model import Order, OrderStatus
 from ctenex.domain.order.schemas import OrderAddRequest, OrderAddResponse
 
@@ -21,3 +22,12 @@ async def place_order(
         id=order_id,
         status=OrderStatus.OPEN,
     )
+
+
+@router.get("/orders")
+async def get_order(
+    request: Request,
+    contract_id: ContractCode,
+) -> list[Order]:
+    orders: list[Order] = request.app.state.matching_engine.get_orders(contract_id)
+    return orders

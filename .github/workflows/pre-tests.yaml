@@ -1,0 +1,16 @@
+name: pre-tests
+
+on:
+  workflow_call:
+
+jobs:
+  lint-format-type:
+    name: Preliminary checks
+    runs-on: ubuntu-latest
+    environment: demo
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run linter, formatter, and type checker
+        uses: ./.github/actions/pre-test/

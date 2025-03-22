@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  pre-tests:
+    uses: ./.github/workflows/pre-tests.yaml
+  tests:
+    uses: ./.github/workflows/tests.yaml
+  build:
+    needs: [pre-tests, tests]
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/build.yaml
