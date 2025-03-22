@@ -1,0 +1,16 @@
+name: tests
+
+on:
+  workflow_call:
+
+jobs:
+  functional-tests:
+    name: Functional tests
+    runs-on: ubuntu-latest
+    environment: demo
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        uses: ./.github/actions/test/

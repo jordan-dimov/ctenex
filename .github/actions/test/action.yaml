@@ -1,0 +1,6 @@
+name: "test"
+description: "Run tests"
+runs:
+  using: "docker"
+  image: "dockerpaps/python-for-ci:3.12.9-latest"
+  entrypoint: ".github/actions/test/run.sh"

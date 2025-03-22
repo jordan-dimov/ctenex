@@ -1,0 +1,6 @@
+name: "pre-test"
+description: "Lint and format"
+runs:
+  using: "docker"
+  image: "dockerpaps/python-for-ci:3.12.9-latest"
+  entrypoint: ".github/actions/pre-test/run.sh"
