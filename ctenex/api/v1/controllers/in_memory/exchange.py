@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Request
 
 from ctenex.domain.contracts import ContractCode
-from ctenex.domain.order.model import Order, OrderStatus
-from ctenex.domain.order.schemas import OrderAddRequest, OrderAddResponse
+from ctenex.domain.entities.order.model import Order, OrderStatus
+from ctenex.domain.entities.order.schemas import OrderAddRequest, OrderAddResponse
 
 router = APIRouter(tags=["exchange"])
 

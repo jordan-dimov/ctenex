@@ -5,9 +5,9 @@ from uuid import UUID
 import pytest
 from fastapi.testclient import TestClient
 
-from ctenex.api.app_factory import create_app
+from ctenex.api.app_factory import create_app, lifespan
 from ctenex.domain.contracts import ContractCode
-from ctenex.domain.order.model import Order, OrderSide, OrderType
+from ctenex.domain.entities.order.model import Order, OrderSide, OrderType
 
 
 @pytest.fixture
@@ -56,6 +56,6 @@ def second_limit_sell_order():
 
 
 @pytest.fixture
-def client() -> Iterator[TestClient]:
-    with TestClient(app=create_app()) as client:
+def client_for_stateful_app() -> Iterator[TestClient]:
+    with TestClient(app=create_app(lifespan=lifespan)) as client:
         yield client

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ctenex.domain.contract.model import Commodity, Contract, DeliveryPeriod
+from ctenex.domain.entities.contract.model import Commodity, Contract, DeliveryPeriod
 
 
 class TestContract:

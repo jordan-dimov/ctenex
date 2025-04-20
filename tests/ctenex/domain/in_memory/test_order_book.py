@@ -4,8 +4,8 @@ from uuid import UUID, uuid4
 import pytest
 
 from ctenex.domain.contracts import ContractCode
-from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
-from ctenex.domain.order_book import OrderBook
+from ctenex.domain.entities.order.model import Order, OrderSide, OrderStatus, OrderType
+from ctenex.domain.in_memory.order_book.model import OrderBook
 
 
 @pytest.fixture

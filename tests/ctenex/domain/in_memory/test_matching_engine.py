@@ -2,8 +2,8 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from ctenex.domain.contracts import ContractCode
-from ctenex.domain.matching_engine import MatchingEngine
-from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
+from ctenex.domain.entities.order.model import Order, OrderSide, OrderStatus, OrderType
+from ctenex.domain.in_memory.matching_engine.model import MatchingEngine
 from tests.fixtures import (  # noqa F401
     limit_buy_order,
     limit_sell_order,

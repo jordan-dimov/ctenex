@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from ctenex.domain.order.model import OrderSide, OrderStatus, OrderType
+from ctenex.domain.entities.order.model import OrderSide, OrderStatus, OrderType
 
 
 class OrderAddRequest(BaseModel):

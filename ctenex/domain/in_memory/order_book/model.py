@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sortedcontainers import SortedDict
 
-from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
+from ctenex.domain.entities.order.model import Order, OrderSide, OrderStatus, OrderType
 
 
 class OrderBook:

@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 from ctenex.domain.contracts import ContractCode
-from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
+from ctenex.domain.entities.order.model import Order, OrderSide, OrderStatus, OrderType
 
 
 class TestOrder:

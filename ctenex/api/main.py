@@ -1,11 +1,11 @@
 from loguru import logger
 
-from ctenex.api.app_factory import create_app
+from ctenex.api.app_factory import create_app, lifespan
 from ctenex.settings.application import get_app_settings
 
 settings = get_app_settings()
 
-app = create_app()
+stateful_app = create_app(lifespan=lifespan)
 
 
 def main():
@@ -13,7 +13,7 @@ def main():
     logger.info(f"Running in {settings.environment} mode")
 
     uvicorn.run(
-        app="ctenex.api.main:app",
+        app="ctenex.api.main:stateful_app",
         host=str(settings.api.api_host),
         port=settings.api.api_port,
         reload=_reload,

@@ -4,10 +4,12 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
 
 from ctenex.domain.contracts import ContractCode
-from ctenex.domain.order.model import OrderSide, OrderStatus, OrderType
-from ctenex.domain.order.schemas import OrderAddRequest
+from ctenex.domain.entities.order.model import OrderSide, OrderStatus, OrderType
+from ctenex.domain.entities.order.schemas import OrderAddRequest
 from tests.fixtures import (
-    client,  # noqa F401
+    client_for_stateful_app as client,  # noqa F401
+)
+from tests.fixtures import (
     limit_buy_order,  # noqa F401
     limit_sell_order,  # noqa F401
     second_limit_sell_order,  # noqa F401

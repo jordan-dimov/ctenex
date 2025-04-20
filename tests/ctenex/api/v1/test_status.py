@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from tests.fixtures import client  # noqa F401
+from tests.fixtures import client_for_stateful_app as client  # noqa F401
 
 
 class TestStatusController:

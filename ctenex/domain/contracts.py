@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 
-from ctenex.domain.contract.model import Commodity, Contract, DeliveryPeriod
+from ctenex.domain.entities.contract.model import Commodity, Contract, DeliveryPeriod
 
 
 class ContractCode(str, Enum):

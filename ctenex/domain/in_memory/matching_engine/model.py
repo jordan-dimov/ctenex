@@ -4,9 +4,9 @@ from uuid import UUID
 from loguru import logger
 
 from ctenex.domain.contracts import ContractCode
-from ctenex.domain.order.model import Order, OrderSide, OrderStatus, OrderType
-from ctenex.domain.order_book import OrderBook
-from ctenex.domain.trade.model import Trade
+from ctenex.domain.entities.order.model import Order, OrderSide, OrderStatus, OrderType
+from ctenex.domain.entities.trade.model import Trade
+from ctenex.domain.in_memory.order_book.model import OrderBook
 
 
 class MatchingEngine:
