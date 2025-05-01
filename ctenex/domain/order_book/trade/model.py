@@ -1,17 +1,19 @@
 from datetime import UTC, datetime
-from uuid import UUID, uuid4
+from decimal import Decimal
+from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+
+from ctenex.domain.base_model import BaseDomainModel
 
 
-class Trade(BaseModel):
-    id: UUID = Field(default_factory=uuid4)
+class Trade(BaseDomainModel):
     contract_id: str
     buy_order_id: UUID
     sell_order_id: UUID
-    price: float
-    quantity: float
-    timestamp: datetime = Field(default=datetime.now(UTC))
+    price: Decimal
+    quantity: Decimal
+    generated_at: datetime = Field(default=datetime.now(UTC))
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -34,6 +36,6 @@ class Trade(BaseModel):
             f"sell_order_id={self.sell_order_id}, "
             f"price={self.price}, "
             f"quantity={self.quantity}, "
-            f"timestamp={self.timestamp}"
+            f"generated_at={self.generated_at}"
             ")"
         )

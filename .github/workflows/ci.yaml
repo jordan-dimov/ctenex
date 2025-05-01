@@ -10,6 +10,11 @@ jobs:
     uses: ./.github/workflows/pre-tests.yaml
   tests:
     uses: ./.github/workflows/tests.yaml
+    secrets:
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
   build:
     needs: [pre-tests, tests]
     if: github.event_name == 'pull_request'

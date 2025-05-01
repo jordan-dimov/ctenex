@@ -4,9 +4,15 @@ from uuid import UUID
 from loguru import logger
 
 from ctenex.domain.contracts import ContractCode
-from ctenex.domain.entities.order.model import Order, OrderSide, OrderStatus, OrderType
-from ctenex.domain.entities.trade.model import Trade
+from ctenex.domain.entities import (
+    OpenOrderStatus,
+    OrderSide,
+    OrderType,
+    ProcessedOrderStatus,
+)
 from ctenex.domain.in_memory.order_book.model import OrderBook
+from ctenex.domain.order_book.order.model import Order
+from ctenex.domain.order_book.trade.model import Trade
 
 
 class MatchingEngine:
@@ -38,7 +44,7 @@ class MatchingEngine:
 
         # If order still has quantity remaining, add to book
         # (only for limit orders) <- TODO: review this
-        if order.remaining_quantity > 0 and order.order_type == OrderType.LIMIT:
+        if order.remaining_quantity > 0 and order.type == OrderType.LIMIT:
             self.order_books[order.contract_id].add_order(order)
 
         self.trades.extend(trades)
@@ -63,10 +69,7 @@ class MatchingEngine:
             best_ask_price = order_book.asks.keys()[0]
 
             # For limit orders, check if the price is acceptable
-            if (
-                buy_order.order_type == OrderType.LIMIT
-                and best_ask_price > buy_order.price
-            ):
+            if buy_order.type == OrderType.LIMIT and best_ask_price > buy_order.price:
                 break
 
             # Match against the best ask price
@@ -95,16 +98,16 @@ class MatchingEngine:
 
                 # Update order statuses
                 if sell_order.remaining_quantity == 0:
-                    sell_order.status = OrderStatus.FILLED
+                    sell_order.status = ProcessedOrderStatus.FILLED
                     ask_queue.pop(0)
                     order_book.orders_by_id.pop(sell_order.id)
                 else:
-                    sell_order.status = OrderStatus.PARTIALLY_FILLED
+                    sell_order.status = OpenOrderStatus.PARTIALLY_FILLED
 
                 if buy_order.remaining_quantity == 0:
-                    buy_order.status = OrderStatus.FILLED
+                    buy_order.status = ProcessedOrderStatus.FILLED
                 else:
-                    buy_order.status = OrderStatus.PARTIALLY_FILLED
+                    buy_order.status = OpenOrderStatus.PARTIALLY_FILLED
 
             # If ask queue is empty, remove the price level
             if not ask_queue:
@@ -131,10 +134,7 @@ class MatchingEngine:
             best_bid_price = -order_book.bids.keys()[0]  # Convert back from negative
 
             # For limit orders, check if the price is acceptable
-            if (
-                sell_order.order_type == OrderType.LIMIT
-                and best_bid_price < sell_order.price
-            ):
+            if sell_order.type == OrderType.LIMIT and best_bid_price < sell_order.price:
                 break
 
             # Match against the best bid price
@@ -163,16 +163,16 @@ class MatchingEngine:
 
                 # Update order statuses
                 if buy_order.remaining_quantity == 0:
-                    buy_order.status = OrderStatus.FILLED
+                    buy_order.status = ProcessedOrderStatus.FILLED
                     bid_queue.pop(0)
                     order_book.orders_by_id.pop(buy_order.id)
                 else:
-                    buy_order.status = OrderStatus.PARTIALLY_FILLED
+                    buy_order.status = OpenOrderStatus.PARTIALLY_FILLED
 
                 if sell_order.remaining_quantity == 0:
-                    sell_order.status = OrderStatus.FILLED
+                    sell_order.status = ProcessedOrderStatus.FILLED
                 else:
-                    sell_order.status = OrderStatus.PARTIALLY_FILLED
+                    sell_order.status = OpenOrderStatus.PARTIALLY_FILLED
 
             # If bid queue is empty, remove the price level
             if not bid_queue:

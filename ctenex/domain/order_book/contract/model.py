@@ -1,32 +1,21 @@
 from datetime import datetime
-from enum import Enum
+from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
-
-class Commodity(str, Enum):
-    POWER = "power"
-    NATURAL_GAS = "natural_gas"
-    CRUDE_OIL = "crude_oil"
+from ctenex.domain.base_model import BaseDomainModel
+from ctenex.domain.entities import Commodity, DeliveryPeriod
 
 
-class DeliveryPeriod(str, Enum):
-    HOURLY = "hourly"
-    DAILY = "daily"
-    MONTHLY = "monthly"
-    QUARTERLY = "quarterly"
-    YEARLY = "yearly"
-
-
-class Contract(BaseModel):
-    id: str = Field(description="Unique identifier for the contract")
+class Contract(BaseDomainModel):
+    external_id: str = Field(description="Unique identifier for the contract")
     commodity: Commodity
     delivery_period: DeliveryPeriod
     start_date: datetime
     end_date: datetime
     location: str = Field(description="Delivery location code (e.g., 'GB', 'DE')")
-    tick_size: float = Field(description="Minimum price movement")
-    contract_size: float = Field(
+    tick_size: Decimal = Field(description="Minimum price movement")
+    contract_size: Decimal = Field(
         description="Size of one contract unit in MW or equivalent"
     )
 

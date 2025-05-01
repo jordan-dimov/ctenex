@@ -1,4 +1,16 @@
 services:
+  db:
+    image: postgres:17.4
+    container_name: ctenex_db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    command: ["postgres", "-c", "log_statement=all"]
+    ports:
+      - "5432:5432"
+    volumes:
+      - ctenex_data:/var/lib/postgresql/ctenex_data
   app:
     build:
       context: .
@@ -9,4 +21,5 @@ services:
       - ./ctenex:/app/ctenex  # Hot reload
 
 volumes:
+  ctenex_data:
   ctenex:

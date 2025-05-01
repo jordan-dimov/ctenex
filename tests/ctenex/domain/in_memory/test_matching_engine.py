@@ -1,13 +1,20 @@
 from datetime import UTC, datetime
+from decimal import Decimal
 from uuid import uuid4
 
 from ctenex.domain.contracts import ContractCode
-from ctenex.domain.entities.order.model import Order, OrderSide, OrderStatus, OrderType
+from ctenex.domain.entities import (
+    OpenOrderStatus,
+    OrderSide,
+    OrderType,
+    ProcessedOrderStatus,
+)
 from ctenex.domain.in_memory.matching_engine.model import MatchingEngine
-from tests.fixtures import (  # noqa F401
-    limit_buy_order,
-    limit_sell_order,
-    second_limit_sell_order,
+from ctenex.domain.order_book.order.model import Order
+from tests.fixtures.domain import (
+    limit_buy_order,  # noqa F811
+    limit_sell_order,  # noqa F811
+    second_limit_sell_order,  # noqa F811
 )
 
 
@@ -35,7 +42,7 @@ class TestMatchingEngine:
 
         # Validation
         assert limit_buy_order.id == order_id
-        assert limit_buy_order.status == OrderStatus.OPEN
+        assert limit_buy_order.status == OpenOrderStatus.OPEN
         assert limit_buy_order.remaining_quantity == limit_buy_order.quantity
         assert limit_buy_order in self.matching_engine.get_orders(
             ContractCode.UK_BL_MAR_25
@@ -55,7 +62,7 @@ class TestMatchingEngine:
 
         # Validation
         assert limit_sell_order.id == order_id
-        assert limit_sell_order.status == OrderStatus.OPEN
+        assert limit_sell_order.status == OpenOrderStatus.OPEN
         assert limit_sell_order.remaining_quantity == limit_sell_order.quantity
         assert limit_sell_order in self.matching_engine.get_orders(
             ContractCode.UK_BL_MAR_25
@@ -77,8 +84,8 @@ class TestMatchingEngine:
 
         # Validation
         assert limit_sell_order.id == order_id
-        assert limit_buy_order.status == OrderStatus.FILLED
-        assert limit_sell_order.status == OrderStatus.FILLED
+        assert limit_buy_order.status == ProcessedOrderStatus.FILLED
+        assert limit_sell_order.status == ProcessedOrderStatus.FILLED
         assert limit_buy_order.remaining_quantity == 0
         assert limit_sell_order.remaining_quantity == 0
 
@@ -93,7 +100,7 @@ class TestMatchingEngine:
         """Test matching limit orders where one buy order is partially filled."""
 
         # Setup
-        ...
+        limit_sell_order.quantity = Decimal("5.0")
 
         # Test
         self.matching_engine.add_order(limit_buy_order)  # Quantity: 10.0
@@ -101,8 +108,8 @@ class TestMatchingEngine:
 
         # Validation
         assert limit_sell_order.id == order_id
-        assert limit_buy_order.status == OrderStatus.PARTIALLY_FILLED
-        assert limit_sell_order.status == OrderStatus.FILLED
+        assert limit_buy_order.status == OpenOrderStatus.PARTIALLY_FILLED
+        assert limit_sell_order.status == ProcessedOrderStatus.FILLED
         assert limit_buy_order.remaining_quantity == 5.0
         assert limit_sell_order.remaining_quantity == 0
 
@@ -129,9 +136,9 @@ class TestMatchingEngine:
 
         # Validation
         assert second_limit_sell_order.id == order_id
-        assert limit_buy_order.status == OrderStatus.FILLED
-        assert second_limit_sell_order.status == OrderStatus.PARTIALLY_FILLED
-        assert limit_buy_order.status == OrderStatus.FILLED
+        assert limit_buy_order.status == ProcessedOrderStatus.FILLED
+        assert second_limit_sell_order.status == OpenOrderStatus.PARTIALLY_FILLED
+        assert limit_buy_order.status == ProcessedOrderStatus.FILLED
         assert second_limit_sell_order.remaining_quantity == 5.0
         assert limit_buy_order.remaining_quantity == 0
 
@@ -151,11 +158,11 @@ class TestMatchingEngine:
         market_order = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER3",
+            trader_id=uuid4(),
             side=OrderSide.BUY,
-            order_type=OrderType.MARKET,
-            quantity=5.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.MARKET,
+            quantity=Decimal("10.0"),
+            placed_at=datetime.now(UTC),
         )
 
         # Test
@@ -163,8 +170,8 @@ class TestMatchingEngine:
 
         # Validation
         assert market_order.id == order_id
-        assert market_order.status == OrderStatus.FILLED
-        assert limit_sell_order.status == OrderStatus.FILLED
+        assert market_order.status == ProcessedOrderStatus.FILLED
+        assert limit_sell_order.status == ProcessedOrderStatus.FILLED
 
         # Book should be empty
         assert len(self.matching_engine.get_orders(ContractCode.UK_BL_MAR_25)) == 0
@@ -180,11 +187,11 @@ class TestMatchingEngine:
         market_order = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER3",
+            trader_id=uuid4(),
             side=OrderSide.SELL,
-            order_type=OrderType.MARKET,
-            quantity=5.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.MARKET,
+            quantity=Decimal("5.0"),
+            placed_at=datetime.now(UTC),
         )
 
         # Test
@@ -192,8 +199,8 @@ class TestMatchingEngine:
 
         # Validation
         assert market_order.id == order_id
-        assert market_order.status == OrderStatus.FILLED
-        assert limit_buy_order.status == OrderStatus.PARTIALLY_FILLED
+        assert market_order.status == ProcessedOrderStatus.FILLED
+        assert limit_buy_order.status == OpenOrderStatus.PARTIALLY_FILLED
         assert limit_buy_order.remaining_quantity == 5.0
 
     def test_match_multiple_orders(self):
@@ -203,22 +210,22 @@ class TestMatchingEngine:
         sell1 = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER1",
+            trader_id=uuid4(),
             side=OrderSide.SELL,
-            order_type=OrderType.LIMIT,
-            price=100.0,
-            quantity=5.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.LIMIT,
+            price=Decimal("100.0"),
+            quantity=Decimal("5.0"),
+            placed_at=datetime.now(UTC),
         )
         sell2 = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER2",
+            trader_id=uuid4(),
             side=OrderSide.SELL,
-            order_type=OrderType.LIMIT,
-            price=101.0,
-            quantity=5.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.LIMIT,
+            price=Decimal("101.0"),
+            quantity=Decimal("5.0"),
+            placed_at=datetime.now(UTC),
         )
         self.matching_engine.add_order(sell1)
         self.matching_engine.add_order(sell2)
@@ -226,11 +233,11 @@ class TestMatchingEngine:
         buy_order = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER3",
+            trader_id=uuid4(),
             side=OrderSide.BUY,
-            order_type=OrderType.MARKET,
-            quantity=8.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.MARKET,
+            quantity=Decimal("8.0"),
+            placed_at=datetime.now(UTC),
         )
 
         # Test
@@ -238,9 +245,9 @@ class TestMatchingEngine:
 
         # Validation
         assert buy_order.id == order_id
-        assert sell1.status == OrderStatus.FILLED
-        assert sell2.status == OrderStatus.PARTIALLY_FILLED
-        assert buy_order.status == OrderStatus.FILLED
+        assert sell1.status == ProcessedOrderStatus.FILLED
+        assert sell2.status == OpenOrderStatus.PARTIALLY_FILLED
+        assert buy_order.status == ProcessedOrderStatus.FILLED
         assert buy_order.remaining_quantity == 0
 
     def test_price_time_priority_matching(self):
@@ -250,22 +257,22 @@ class TestMatchingEngine:
         sell1 = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER1",
+            trader_id=uuid4(),
             side=OrderSide.SELL,
-            order_type=OrderType.LIMIT,
-            price=100.0,
-            quantity=5.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.LIMIT,
+            price=Decimal("100.0"),
+            quantity=Decimal("5.0"),
+            placed_at=datetime.now(UTC),
         )
         sell2 = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER2",
+            trader_id=uuid4(),
             side=OrderSide.SELL,
-            order_type=OrderType.LIMIT,
-            price=100.0,
-            quantity=5.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.LIMIT,
+            price=Decimal("100.0"),
+            quantity=Decimal("5.0"),
+            placed_at=datetime.now(UTC),
         )
         self.matching_engine.add_order(sell1)  # First order at 100.0
         self.matching_engine.add_order(sell2)  # Second order at 100.0
@@ -273,11 +280,11 @@ class TestMatchingEngine:
         buy_order = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER3",
+            trader_id=uuid4(),
             side=OrderSide.BUY,
-            order_type=OrderType.MARKET,
-            quantity=7.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.MARKET,
+            quantity=Decimal("7.0"),
+            placed_at=datetime.now(UTC),
         )
 
         # Test
@@ -285,9 +292,9 @@ class TestMatchingEngine:
 
         # Validation
         assert buy_order.id == order_id
-        assert sell1.status == OrderStatus.FILLED
-        assert sell2.status == OrderStatus.PARTIALLY_FILLED
-        assert buy_order.status == OrderStatus.FILLED
+        assert sell1.status == ProcessedOrderStatus.FILLED
+        assert sell2.status == OpenOrderStatus.PARTIALLY_FILLED
+        assert buy_order.status == ProcessedOrderStatus.FILLED
         assert buy_order.remaining_quantity == 0.0
 
     def test_get_trades(
@@ -315,24 +322,24 @@ class TestMatchingEngine:
         sell_order = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER1",
+            trader_id=uuid4(),
             side=OrderSide.SELL,
-            order_type=OrderType.LIMIT,
-            price=100.0,
-            quantity=5.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.LIMIT,
+            price=Decimal("100.0"),
+            quantity=Decimal("5.0"),
+            placed_at=datetime.now(UTC),
         )
         self.matching_engine.add_order(sell_order)
 
         buy_order = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER2",
+            trader_id=uuid4(),
             side=OrderSide.BUY,
-            order_type=OrderType.LIMIT,
-            price=99.0,  # Lower than sell order price
-            quantity=5.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.LIMIT,
+            price=Decimal("99.0"),  # Lower than sell order price
+            quantity=Decimal("5.0"),
+            placed_at=datetime.now(UTC),
         )
 
         # Test
@@ -340,8 +347,8 @@ class TestMatchingEngine:
 
         # Validation
         assert buy_order.id == order_id
-        assert buy_order.status == OrderStatus.OPEN
-        assert sell_order.status == OrderStatus.OPEN
+        assert buy_order.status == OpenOrderStatus.OPEN
+        assert sell_order.status == OpenOrderStatus.OPEN
         assert buy_order.remaining_quantity == 5.0
         assert sell_order.remaining_quantity == 5.0
 
@@ -358,24 +365,24 @@ class TestMatchingEngine:
         buy_order = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER1",
+            trader_id=uuid4(),
             side=OrderSide.BUY,
-            order_type=OrderType.LIMIT,
-            price=100.0,
-            quantity=5.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.LIMIT,
+            price=Decimal("100.0"),
+            quantity=Decimal("5.0"),
+            placed_at=datetime.now(UTC),
         )
         self.matching_engine.add_order(buy_order)
 
         sell_order = Order(
             id=uuid4(),
             contract_id=ContractCode.UK_BL_MAR_25,
-            trader_id="TRADER2",
+            trader_id=uuid4(),
             side=OrderSide.SELL,
-            order_type=OrderType.LIMIT,
-            price=101.0,  # Higher than buy order price
-            quantity=5.0,
-            created_at=datetime.now(UTC),
+            type=OrderType.LIMIT,
+            price=Decimal("101.0"),  # Higher than buy order price
+            quantity=Decimal("5.0"),
+            placed_at=datetime.now(UTC),
         )
 
         # Test
@@ -383,8 +390,8 @@ class TestMatchingEngine:
 
         # Validation
         assert sell_order.id == order_id
-        assert buy_order.status == OrderStatus.OPEN
-        assert sell_order.status == OrderStatus.OPEN
+        assert buy_order.status == OpenOrderStatus.OPEN
+        assert sell_order.status == OpenOrderStatus.OPEN
         assert buy_order.remaining_quantity == 5.0
         assert sell_order.remaining_quantity == 5.0
 

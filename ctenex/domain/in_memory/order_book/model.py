@@ -1,9 +1,11 @@
 from collections import defaultdict
+from decimal import Decimal
 from uuid import UUID
 
 from sortedcontainers import SortedDict
 
-from ctenex.domain.entities.order.model import Order, OrderSide, OrderStatus, OrderType
+from ctenex.domain.entities import OrderSide, OrderType, ProcessedOrderStatus
+from ctenex.domain.order_book.order.model import Order
 
 
 class OrderBook:
@@ -31,8 +33,10 @@ class OrderBook:
         """Add an order to the appropriate side of the book."""
 
         # For market orders, set price to infinity (buy) or 0 (sell) to ensure matching
-        if order.order_type == OrderType.MARKET:
-            order.price = float("inf") if order.side == OrderSide.BUY else 0.0
+        if order.type == OrderType.MARKET:
+            order.price = (
+                Decimal("999.99") if order.side == OrderSide.BUY else Decimal("0.00")
+            )
         elif order.price is None:
             raise ValueError("Order must have a price")
 
@@ -73,5 +77,5 @@ class OrderBook:
         # Remove from ID lookup
         del self.orders_by_id[order_id]
 
-        order.status = OrderStatus.CANCELLED
+        order.status = ProcessedOrderStatus.CANCELLED
         return order
