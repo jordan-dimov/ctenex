@@ -2,6 +2,8 @@ from datetime import datetime
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Optional
 
+from ctenex.domain import OrderSide, OrderType
+
 import httpx
 import typer
 
@@ -20,8 +22,8 @@ app = typer.Typer()
 @app.command()
 def place_order(
     contract_id: str = typer.Argument(..., help="Contract identifier"),
-    side: str = typer.Argument(..., help="Order side (BUY/SELL)"),
-    type: str = typer.Argument(..., help="Order type (LIMIT/MARKET)"),
+    side: OrderSide = typer.Argument(..., help="Order side (BUY/SELL)"),
+    type: OrderType = typer.Argument(..., help="Order type (LIMIT/MARKET)"),
     quantity: float = typer.Argument(..., help="Order quantity"),
     price: float = typer.Argument(..., help="Order price (2 decimal places precision)"),
 ):

@@ -66,6 +66,11 @@ The system exposes its functionality through a FastAPI REST API, allowing:
 * Viewing current market orders
 * Checking contract specifications
 
+## Exchange client
+
+A simple CLI tool is provided for keeping a local portfolio and interacting with the exchange.
+Check out the [Client Exchange section](./docs/client-exchange.md)
+
 ## Development
 
 To learn how to use the dev tools available, see the [Dev Tools section](./docs/dev-tools.md)
