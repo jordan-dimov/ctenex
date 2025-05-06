@@ -2,11 +2,10 @@ from datetime import datetime
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Optional
 
-from ctenex.domain import OrderSide, OrderType
-
 import httpx
 import typer
 
+from ctenex.domain import OrderSide, OrderType
 from ctenex.exchange_client.db.connection import get_db_connection
 
 
