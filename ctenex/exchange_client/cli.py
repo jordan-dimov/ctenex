@@ -4,6 +4,7 @@ from typing import Optional
 
 import httpx
 import typer
+
 from ctenex.exchange_client.db.connection import get_db_connection
 
 
