@@ -5,7 +5,7 @@ from fastapi import HTTPException
 # HTTP exceptions (meant to stop execution on the spot)
 
 
-class CTMDSException(HTTPException):
+class CtenexException(HTTPException):
     def __init__(
         self,
         status_code: int,

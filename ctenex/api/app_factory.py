@@ -1,28 +1,17 @@
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.types import StatefulLifespan
 
 from ctenex import __version__
-from ctenex.api.v1.controllers.exchange import router as exchange_router
-from ctenex.api.v1.controllers.status import router as status_router
-from ctenex.domain.matching_engine import MatchingEngine
 from ctenex.settings.application import get_app_settings
 
 settings = get_app_settings()
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Instantiate the matching engine
-    app.state.matching_engine = MatchingEngine()
-    app.state.matching_engine.start()
-    yield
-    # Clean up all order books
-    app.state.matching_engine.stop()
-
-
-def create_app() -> FastAPI:
+def create_app(
+    routers: list[APIRouter],
+    lifespan: StatefulLifespan[FastAPI] | None = None,
+) -> FastAPI:
     app = FastAPI(
         title=settings.project_name,
         version=__version__,
@@ -31,7 +20,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
     register_cors(app)
-    register_routers(app)
+    register_routers(app, routers)
     return app
 
 
@@ -45,6 +34,6 @@ def register_cors(app: FastAPI) -> None:
     )
 
 
-def register_routers(app: FastAPI) -> None:
-    app.include_router(status_router)
-    app.include_router(exchange_router)
+def register_routers(app: FastAPI, routers: list[APIRouter]) -> None:
+    for router in routers:
+        app.include_router(router)

@@ -2,15 +2,42 @@ name: tests
 
 on:
   workflow_call:
+    secrets:
+      POSTGRES_DB:
+        required: true
+      POSTGRES_USER:
+        required: true
+      POSTGRES_PASSWORD:
+        required: true
+      POSTGRES_HOST:
+        required: true
 
 jobs:
   functional-tests:
     name: Functional tests
     runs-on: ubuntu-latest
     environment: demo
+    env:
+      DB_NAME: ${{ secrets.POSTGRES_DB }}
+      DB_USER: ${{ secrets.POSTGRES_USER }}
+      DB_PASS: ${{ secrets.POSTGRES_PASSWORD }}
+      DB_HOST: ${{ secrets.POSTGRES_HOST }}
+    services:
+      db:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run tests
-        uses: ./.github/actions/test/
+      - name: Run the tests
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install
+          poetry run coverage run -m pytest tests --full-trace
+          poetry run coverage report -m
