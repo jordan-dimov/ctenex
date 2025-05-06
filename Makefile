@@ -1,4 +1,4 @@
-DIRS = ctenex/ tests/
+DIRS = ctenex/ exchange_client/ tests/
 
 .PHONY: lint format type-check test coverage
 
