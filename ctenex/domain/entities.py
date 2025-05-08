@@ -101,11 +101,11 @@ class Contract(AbstractBase):
         type_=String,
         unique=True,
     )
-    commodity: Mapped[str] = mapped_column(
+    commodity: Mapped[Commodity] = mapped_column(
         type_=String,
         nullable=False,
     )
-    delivery_period: Mapped[str] = mapped_column(
+    delivery_period: Mapped[DeliveryPeriod] = mapped_column(
         type_=String,
         nullable=False,
     )

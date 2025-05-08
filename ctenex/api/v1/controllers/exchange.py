@@ -1,10 +1,14 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Request
+from fastapi import APIRouter, Body, Depends
 
+from ctenex.core.db.async_session import AsyncSessionStream, db
+from ctenex.core.db.utils import get_entity_values
 from ctenex.domain.contracts import ContractCode
 from ctenex.domain.entities import OpenOrderStatus
 from ctenex.domain.matching_engine.model import matching_engine
+from ctenex.domain.order_book.contract.reader import contracts_reader
+from ctenex.domain.order_book.contract.schemas import ContractGetResponse
 from ctenex.domain.order_book.order.model import Order
 from ctenex.domain.order_book.order.schemas import OrderAddRequest, OrderAddResponse
 
@@ -13,7 +17,6 @@ router = APIRouter(tags=["exchange"])
 
 @router.post("/orders")
 async def place_order(
-    request: Request,
     body: Annotated[OrderAddRequest, Body()],
 ) -> OrderAddResponse:
     order = Order(**body.model_dump())
@@ -28,8 +31,23 @@ async def place_order(
 
 @router.get("/orders")
 async def get_order(
-    request: Request,
     contract_id: ContractCode,
 ) -> list[Order]:
     orders: list[Order] = await matching_engine.get_orders(contract_id)
     return orders
+
+
+@router.get("/supported-contracts")
+async def get_supported_contracts(
+    limit: int = 10,
+    page: int = 1,
+    db: AsyncSessionStream = Depends(db),
+) -> list[ContractGetResponse]:
+    contracts = await contracts_reader.get_many(
+        db=db,
+        limit=limit,
+        page=page,
+    )
+    return [
+        ContractGetResponse(**get_entity_values(contract)) for contract in contracts
+    ]

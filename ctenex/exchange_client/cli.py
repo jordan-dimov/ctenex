@@ -6,7 +6,9 @@ import httpx
 import typer
 
 from ctenex.domain import OrderSide, OrderType
+from ctenex.domain.order_book.contract.schemas import ContractGetResponse
 from ctenex.exchange_client.db.connection import get_db_connection
+from ctenex.exchange_client.db.init import init_db
 
 
 # TODO: Move to settings
@@ -29,18 +31,42 @@ def place_order(
     """Place a new order through the exchange API."""
     base_url = get_api_url()
 
+    # Validate contract ID exists
+    try:
+        with httpx.Client() as client:
+            response = client.get(f"{base_url}/v1/stateless/supported-contracts")
+            response.raise_for_status()
+            supported_contracts = response.json()
+
+            if contract_id not in [c["contract_id"] for c in supported_contracts]:
+                typer.echo(f"Error: Contract ID '{contract_id}' is not supported")
+                raise typer.Exit(1)
+    except httpx.HTTPError as e:
+        typer.echo(f"Error validating contract ID: {str(e)}")
+        raise typer.Exit(1)
+
+    # supported_contracts.
+    contracts = [ContractGetResponse(**c) for c in supported_contracts]
+    tick_size = next(
+        (c.tick_size for c in contracts if c.contract_id == contract_id), None
+    )
+
+    if tick_size is None:
+        typer.echo(f"Error: Contract ID '{contract_id}' is not supported")
+        raise typer.Exit(1)
+
     # Convert float price to Decimal with 2 decimal places precision
     price_decimal = Decimal(str(price)).quantize(
-        Decimal("0.01"), rounding=ROUND_HALF_UP
+        Decimal(tick_size), rounding=ROUND_HALF_UP
     )
     quantity_decimal = Decimal(str(quantity)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     )
 
-    print(f"Contract ID: {contract_id}")
-    print(f"Side: {side}")
-    print(f"Quantity: {quantity_decimal}")
-    print(f"Price: {price_decimal}")
+    typer.echo(f"Contract ID: {contract_id}")
+    typer.echo(f"Side: {side}")
+    typer.echo(f"Quantity: {quantity_decimal}")
+    typer.echo(f"Price: {price_decimal}")
 
     # Prepare order data
     order_data = {
@@ -119,4 +145,5 @@ def list_orders(
 
 
 if __name__ == "__main__":
+    init_db()
     app()
