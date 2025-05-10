@@ -6,6 +6,8 @@ from fastapi.testclient import TestClient
 
 from ctenex.domain.contracts import ContractCode
 from ctenex.domain.entities import (
+    Commodity,
+    DeliveryPeriod,
     OpenOrderStatus,
     OrderSide,
     OrderType,
@@ -18,6 +20,7 @@ from tests.fixtures.domain import (
     limit_buy_order,  # noqa F401
     limit_sell_order,  # noqa F401
     second_limit_sell_order,  # noqa F401
+    supported_contract_gb,  # noqa F401
 )
 
 
@@ -244,3 +247,39 @@ class TestOrdersController:
         assert payload[2]["type"] == order_request_3.type
         assert payload[2]["quantity"] == str(order_request_3.quantity)
         assert payload[2]["status"] == ProcessedOrderStatus.FILLED
+
+
+class TestContractsController:
+    def setup_method(self):
+        self.url = "/supported-contracts"
+
+    async def test_get_supported_contracts_one_element(
+        self,
+        client: TestClient,  # noqa F811
+        supported_contract_gb,  # noqa F811
+    ):
+        response = client.get(
+            url=self.url,
+        )
+
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]["contract_id"] == ContractCode.UK_BL_MAR_25
+        assert response.json()[0]["commodity"] == Commodity.POWER
+        assert response.json()[0]["delivery_period"] == DeliveryPeriod.HOURLY
+        assert response.json()[0]["location"] == "GB"
+        assert response.json()[0]["contract_size"] == "1.00"
+        assert response.json()[0]["tick_size"] == "0.01"
+        assert response.json()[0]["start_date"] == "2025-03-01T00:00:00Z"
+        assert response.json()[0]["end_date"] == "2025-03-02T00:00:00Z"
+
+    async def test_get_supported_contracts_empty(
+        self,
+        client: TestClient,  # noqa F811
+    ):
+        response = client.get(
+            url=self.url,
+        )
+
+        assert response.status_code == 200
+        assert len(response.json()) == 0

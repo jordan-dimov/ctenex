@@ -4,6 +4,7 @@ from typing import Iterator
 from uuid import UUID, uuid4
 
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
 
 from ctenex.api.app_factory import create_app
@@ -13,8 +14,16 @@ from ctenex.api.v1.in_memory.controllers.exchange import (
     router as stateful_exchange_router,
 )
 from ctenex.api.v1.in_memory.lifespan import lifespan
+from ctenex.core.db.async_session import get_async_session
 from ctenex.domain.contracts import ContractCode
-from ctenex.domain.entities import OrderSide, OrderType
+from ctenex.domain.entities import (
+    Commodity,
+    Contract,
+    Country,
+    DeliveryPeriod,
+    OrderSide,
+    OrderType,
+)
 from ctenex.domain.order_book.order.model import Order
 
 
@@ -97,6 +106,36 @@ def market_sell_order():
         quantity=Decimal("5.0"),
         placed_at=datetime.now(UTC),
     )
+
+
+@pytest_asyncio.fixture
+async def supported_contract_gb():
+    async with get_async_session() as session:
+        session.add(
+            Country(
+                country_id="GB",
+                name="United Kingdom",
+            )
+        )
+        await session.commit()
+
+    supported_contract = Contract(
+        id=uuid4(),
+        contract_id=ContractCode.UK_BL_MAR_25,
+        commodity=Commodity.POWER,
+        delivery_period=DeliveryPeriod.HOURLY,
+        contract_size=Decimal("1.0"),
+        location="GB",
+        start_date=datetime(2025, 3, 1),
+        end_date=datetime(2025, 3, 2),
+        tick_size=Decimal("0.01"),
+    )
+
+    async with get_async_session() as session:
+        session.add(supported_contract)
+        await session.commit()
+        await session.refresh(supported_contract)
+    return supported_contract
 
 
 # Route testing
