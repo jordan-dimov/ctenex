@@ -10,7 +10,11 @@ from ctenex.domain.matching_engine.model import matching_engine
 from ctenex.domain.order_book.contract.reader import contracts_reader
 from ctenex.domain.order_book.contract.schemas import ContractGetResponse
 from ctenex.domain.order_book.order.model import Order
-from ctenex.domain.order_book.order.schemas import OrderAddRequest, OrderAddResponse
+from ctenex.domain.order_book.order.schemas import (
+    OrderAddRequest,
+    OrderAddResponse,
+    OrderGetResponse,
+)
 
 router = APIRouter(tags=["exchange"])
 
@@ -30,11 +34,11 @@ async def place_order(
 
 
 @router.get("/orders")
-async def get_order(
+async def get_orders(
     contract_id: ContractCode,
-) -> list[Order]:
+) -> list[OrderGetResponse]:
     orders: list[Order] = await matching_engine.get_orders(contract_id)
-    return orders
+    return [OrderGetResponse(**order.model_dump(exclude_none=True)) for order in orders]
 
 
 @router.get("/supported-contracts")
