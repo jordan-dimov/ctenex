@@ -1,4 +1,4 @@
-from pydantic import Field, IPvAnyAddress, HttpUrl
+from pydantic import Field, HttpUrl, IPvAnyAddress
 
 from ctenex.settings.base import CommonSettings
 
@@ -11,5 +11,5 @@ class APISettings(CommonSettings):
     api_port: int = Field(validation_alias="API_PORT", default=8000)
     base_url: HttpUrl = Field(
         validation_alias="BASE_URL",
-        default="http://localhost:8000",
+        default=HttpUrl("http://localhost:8000"),
     )

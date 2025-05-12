@@ -13,7 +13,7 @@ settings = get_app_settings()
 
 host = settings.api.api_host
 port = settings.api.api_port
-base_url = settings.api.base_url
+base_url = str(settings.api.base_url)
 
 app = create_app(routers=[])
 
