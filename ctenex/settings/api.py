@@ -1,4 +1,4 @@
-from pydantic import Field, HttpUrl, IPvAnyAddress
+from pydantic import Field, IPvAnyAddress, HttpUrl
 
 from ctenex.settings.base import CommonSettings
 
