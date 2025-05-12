@@ -38,3 +38,8 @@ httpx = "^0.28.1"
 duckdb = "^1.2.2"
 typer = "^0.15.3"
 
+
+[tool.poetry.group.bot.dependencies]
+httpx = "^0.28.1"
+pydantic = "^2.11.4"
+
