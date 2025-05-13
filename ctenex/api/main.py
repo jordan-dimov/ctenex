@@ -13,6 +13,7 @@ settings = get_app_settings()
 
 host = settings.api.api_host
 port = settings.api.api_port
+base_url = str(settings.api.base_url)
 
 app = create_app(routers=[])
 
@@ -21,14 +22,14 @@ stateful_app = create_app(
     lifespan=lifespan,
     routers=[status_router, stateful_exchange_router],
 )
-stateful_app_url = f"http://{host}:{port}{stateful_app_path}"
+stateful_app_url = f"{base_url}{stateful_app_path}"
 app.mount(stateful_app_path, stateful_app)
 
 stateless_app_path = "/v1/stateless/"
 stateless_app = create_app(
     routers=[status_router, stateless_exchange_router],
 )
-stateless_app_url = f"http://{host}:{port}{stateless_app_path}"
+stateless_app_url = f"{base_url}{stateless_app_path}"
 app.mount(stateless_app_path, stateless_app)
 
 
