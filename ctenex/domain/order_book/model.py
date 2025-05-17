@@ -24,11 +24,15 @@ class OrderBook:
 
     async def get_orders(
         self,
-        contract_id: ContractCode,
+        filter: OrderFilter,
+        limit: int = 10,
+        page: int = 1,
     ) -> list[OrderSchema]:
         orders = await self.orders_reader.get_many(
             self.db,
-            filter=OrderFilter(contract_id=contract_id),
+            filter=filter,
+            limit=limit,
+            page=page,
         )
         return [OrderSchema(**get_entity_values(order)) for order in orders]
 

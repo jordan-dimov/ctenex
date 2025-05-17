@@ -17,6 +17,7 @@ from ctenex.domain.entities import (
 )
 from ctenex.domain.order_book.model import order_book
 from ctenex.domain.order_book.order.model import Order as OrderSchema
+from ctenex.domain.order_book.order.reader import OrderFilter
 from ctenex.domain.order_book.trade.filter_params import TradeFilterParams
 from ctenex.domain.order_book.trade.model import Trade as TradeSchema
 from ctenex.domain.order_book.trade.reader import trades_reader
@@ -61,9 +62,15 @@ class MatchingEngine:
 
     async def get_orders(
         self,
-        contract_id: ContractCode,
+        filter: OrderFilter,
+        limit: int = 10,
+        page: int = 1,
     ) -> list[OrderSchema]:
-        return await self.order_book.get_orders(contract_id)
+        return await self.order_book.get_orders(
+            filter=filter,
+            limit=limit,
+            page=page,
+        )
 
     async def get_order(
         self,
