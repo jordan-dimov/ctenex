@@ -12,6 +12,7 @@ settings = get_app_settings()
 
 BOT_TRADER_ID = UUID("c4adb8ee-1425-4a10-bd10-87dd587670d3")
 
+
 class MatchingBot:
     def __init__(
         self,
