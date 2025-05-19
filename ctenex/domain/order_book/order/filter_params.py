@@ -1,8 +1,11 @@
 from decimal import Decimal
-from ctenex.core.utils.filter_sort import BaseFilterParams
-from ctenex.domain.entities import OrderSide, OrderStatus, OrderType
+
 from pydantic import field_validator
+
+from ctenex.core.utils.filter_sort import BaseFilterParams
 from ctenex.core.utils.validators import validate_enum
+from ctenex.domain.entities import OrderSide, OrderStatus, OrderType
+
 
 class OrderFilterParams(BaseFilterParams):
     """Filter parameters for orders."""
