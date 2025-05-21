@@ -6,16 +6,12 @@ import httpx
 import typer
 
 from ctenex.domain import OrderSide, OrderType
-from ctenex.domain.order_book.contract.schemas import ContractGetResponse
 from ctenex.exchange_client.db.connection import get_db_connection
 from ctenex.exchange_client.db.init import init_db
+from ctenex.settings.application import get_app_settings
+from ctenex.utils.contracts import validate_contract_id
 
-
-# TODO: Move to settings
-def get_api_url() -> str:
-    """Get the API URL from environment or default to localhost."""
-    return "http://0.0.0.0:8000"  # Default to localhost, can be overridden
-
+settings = get_app_settings()
 
 app = typer.Typer()
 
@@ -29,24 +25,10 @@ def place_order(
     price: float = typer.Argument(..., help="Order price (2 decimal places precision)"),
 ):
     """Place a new order through the exchange API."""
-    base_url = get_api_url()
+    base_url = str(settings.api.base_url)
 
-    # Validate contract ID exists
-    try:
-        with httpx.Client() as client:
-            response = client.get(f"{base_url}/v1/stateless/supported-contracts")
-            response.raise_for_status()
-            supported_contracts = response.json()
+    contracts = validate_contract_id(contract_id, base_url)
 
-            if contract_id not in [c["contract_id"] for c in supported_contracts]:
-                typer.echo(f"Error: Contract ID '{contract_id}' is not supported")
-                raise typer.Exit(1)
-    except httpx.HTTPError as e:
-        typer.echo(f"Error validating contract ID: {str(e)}")
-        raise typer.Exit(1)
-
-    # supported_contracts.
-    contracts = [ContractGetResponse(**c) for c in supported_contracts]
     tick_size = next(
         (c.tick_size for c in contracts if c.contract_id == contract_id), None
     )
@@ -80,7 +62,7 @@ def place_order(
 
     try:
         with httpx.Client() as client:
-            response = client.post(f"{base_url}/v1/stateless/orders", json=order_data)
+            response = client.post(f"{base_url}v1/stateless/orders", json=order_data)
             response.raise_for_status()
             order_response = response.json()
 

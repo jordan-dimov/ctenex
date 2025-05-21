@@ -4,12 +4,12 @@ from fastapi import APIRouter, Body, Depends
 
 from ctenex.core.db.async_session import AsyncSessionStream, db
 from ctenex.core.db.utils import get_entity_values
-from ctenex.domain.contracts import ContractCode
 from ctenex.domain.entities import OpenOrderStatus
 from ctenex.domain.matching_engine.model import matching_engine
 from ctenex.domain.order_book.contract.reader import contracts_reader
 from ctenex.domain.order_book.contract.schemas import ContractGetResponse
 from ctenex.domain.order_book.order.model import Order
+from ctenex.domain.order_book.order.reader import OrderFilter
 from ctenex.domain.order_book.order.schemas import (
     OrderAddRequest,
     OrderAddResponse,
@@ -35,9 +35,15 @@ async def place_order(
 
 @router.get("/orders")
 async def get_orders(
-    contract_id: ContractCode,
+    filter: Annotated[OrderFilter, Depends()],
+    limit: int = 10,
+    page: int = 1,
 ) -> list[OrderGetResponse]:
-    orders: list[Order] = await matching_engine.get_orders(contract_id)
+    orders: list[Order] = await matching_engine.get_orders(
+        filter=filter,
+        page=page,
+        limit=limit,
+    )
     return [OrderGetResponse(**order.model_dump(exclude_none=True)) for order in orders]
 
 
