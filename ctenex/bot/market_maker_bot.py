@@ -45,7 +45,7 @@ class MatchingBot:
         self.poll_size = poll_size
         self.number_of_orders = number_of_orders
 
-        # Attributes
+        # Dependencies
         self.exchange_client = httpx.AsyncClient(base_url=base_url)
         self.orders_generator = orders_generator
 
@@ -66,12 +66,14 @@ class MatchingBot:
             Decimal(0.00),
         )
 
-    async def get_orders(self, contract_id: str) -> list[OrderGetResponse]:
+    async def get_orders(self, contract_id: str, status: str) -> list[OrderGetResponse]:
+        logger.info(f"Polling {status} orders for contract {contract_id}")
+
         response = await self.exchange_client.get(
             url="/v1/stateless/orders",
             params={
                 "contract_id": contract_id,
-                "status": "open",
+                "status": status,
                 "limit": self.poll_size,
                 "page": 1,
             },
@@ -87,9 +89,17 @@ class MatchingBot:
         logger.info(f"Placed order: {response.json()}")
         return OrderAddResponse(**response.json())
 
-    async def process_orders(self, orders: list[OrderGetResponse]) -> None:
+    async def process_orders(self, orders: list[OrderGetResponse], status: str) -> None:
+        if not orders:
+            logger.info("No orders to process")
+            return
+
+        logger.info(
+            f"Processing {len(orders)} {status} order(s) for contract {self.contract_id}"
+        )
+
         for order in orders:
-            # Skip our own orders
+            # Skip our own orders or already processed orders
             if order.trader_id == self.trader_id:
                 continue
 
@@ -101,29 +111,27 @@ class MatchingBot:
                 continue
 
             # Update state for order price and quantity decision
+            order_quantity = (
+                order.remaining_quantity
+                if order.remaining_quantity is not None
+                else order.quantity
+            )
+
             self.update_state(
                 price=order_price,
                 side=order.side,
-                quantity=order.quantity,
+                quantity=order_quantity,
             )
 
             # Generate orders around the mid-price and considering the spread
-            if self.spread != Decimal(0.00):
-                order_quantity = self.spread
-            elif self.best_ask_quantity != Decimal(0.00):
-                order_quantity = self.best_ask_quantity
-            elif self.best_bid_quantity != Decimal(0.00):
-                order_quantity = self.best_bid_quantity
-            else:
-                raise InternalStateError("No quantity to place order")
-
             generated_orders = self.orders_generator(
                 contract_id=self.contract_id,
                 trader_id=self.trader_id,
                 number_of_orders=self.number_of_orders,
+                side=order.side,
                 price=self.mid_price,
                 tick_size=self.tick_size,
-                spread=order_quantity,
+                spread=self.spread,
             )
 
             # Place orders
@@ -140,37 +148,57 @@ class MatchingBot:
         side: OrderSide,
         quantity: Decimal,
     ) -> None:
-        if side == OrderSide.BUY:
+        if side == OrderSide.BUY and price > self.best_bid:
             self.best_bid = price
             self.best_bid_quantity = quantity
-        else:
+        elif side == OrderSide.SELL and (
+            price < self.best_ask or self.best_ask == Decimal(0.00)
+        ):
             self.best_ask = price
             self.best_ask_quantity = quantity
 
-        # Zero guard
         if self.best_bid == Decimal(0.00):
-            self.best_bid = self.best_ask
+            self.mid_price = self.best_ask
         elif self.best_ask == Decimal(0.00):
-            self.best_ask = self.best_bid
-
-        self.mid_price = (self.best_bid + self.best_ask) / 2
-        self.spread = self.best_ask - self.best_bid
+            self.mid_price = self.best_bid
+        else:
+            self.mid_price = (self.best_bid + self.best_ask) / 2
+            self.spread = abs(self.best_ask - self.best_bid)
 
     async def run(self) -> None:
         logger.info(f"Starting matching bot for contract {self.contract_id}")
         while True:
-            orders = await self.get_orders(self.contract_id)
-            await self.process_orders(orders)
+            open_orders = await self.get_orders(
+                self.contract_id,
+                status="open",
+            )
+
+            open_orders = [
+                order for order in open_orders if order.trader_id != self.trader_id
+            ]
+            await self.process_orders(open_orders, status="open")
+
+            partially_filled_orders = await self.get_orders(
+                self.contract_id,
+                status="partially_filled",
+            )
+            partially_filled_orders = [
+                order
+                for order in partially_filled_orders
+                if order.trader_id != self.trader_id
+            ]
+            await self.process_orders(
+                partially_filled_orders, status="partially_filled"
+            )
 
             await asyncio.sleep(self.poll_interval)
-            break
+            # break
 
     async def close(self) -> None:
         await self.exchange_client.aclose()
 
 
 async def main():
-    logger.info("Starting matching bot")
     bot = MatchingBot(
         trader_id=BOT_TRADER_ID,
         base_url=str(settings.api.base_url),
