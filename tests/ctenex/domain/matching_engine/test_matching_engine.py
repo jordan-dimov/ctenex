@@ -11,6 +11,7 @@ from ctenex.domain.entities import (
 )
 from ctenex.domain.matching_engine.model import matching_engine
 from ctenex.domain.order_book.order.model import Order
+from ctenex.domain.order_book.order.reader import OrderFilter
 from tests.fixtures.db import (
     async_session,  # noqa F811
     engine,  # noqa F811
@@ -50,7 +51,9 @@ class TestMatchingEngine:
         assert limit_buy_order.status == OpenOrderStatus.OPEN
         assert limit_buy_order.remaining_quantity == limit_buy_order.quantity
         assert limit_buy_order in await self.matching_engine.get_orders(
-            ContractCode.UK_BL_MAR_25
+            filter=OrderFilter(
+                contract_id=ContractCode.UK_BL_MAR_25,
+            )
         )
 
     async def test_add_limit_sell_order_no_match(
@@ -70,7 +73,9 @@ class TestMatchingEngine:
         assert limit_sell_order.status == OpenOrderStatus.OPEN
         assert limit_sell_order.remaining_quantity == limit_sell_order.quantity
         assert limit_sell_order in await self.matching_engine.get_orders(
-            ContractCode.UK_BL_MAR_25
+            filter=OrderFilter(
+                contract_id=ContractCode.UK_BL_MAR_25,
+            )
         )
 
     async def test_match_limit_orders_exact_quantity(
@@ -144,7 +149,11 @@ class TestMatchingEngine:
         assert filled_buy_order.remaining_quantity == 5.0
 
         # Both orders should remain in the book
-        orders = await self.matching_engine.get_orders(ContractCode.UK_BL_MAR_25)
+        orders = await self.matching_engine.get_orders(
+            filter=OrderFilter(
+                contract_id=ContractCode.UK_BL_MAR_25,
+            )
+        )
         assert len(orders) == 2
 
     async def test_match_limit_orders_with_partial_fill_of_sell_order(
@@ -184,7 +193,11 @@ class TestMatchingEngine:
         assert filled_buy_order.remaining_quantity == 0
 
         # Both orders should remain in the book
-        orders = await self.matching_engine.get_orders(ContractCode.UK_BL_MAR_25)
+        orders = await self.matching_engine.get_orders(
+            filter=OrderFilter(
+                contract_id=ContractCode.UK_BL_MAR_25,
+            )
+        )
         assert len(orders) == 2
 
     async def test_match_market_buy_order(
@@ -222,7 +235,11 @@ class TestMatchingEngine:
         assert filled_sell_order.remaining_quantity == 0
 
         # Both should remain in the book
-        orders = await self.matching_engine.get_orders(ContractCode.UK_BL_MAR_25)
+        orders = await self.matching_engine.get_orders(
+            filter=OrderFilter(
+                contract_id=ContractCode.UK_BL_MAR_25,
+            )
+        )
         assert len(orders) == 2
 
     async def test_match_market_sell_order(
@@ -260,7 +277,11 @@ class TestMatchingEngine:
         assert filled_buy_order.remaining_quantity == 5.0
 
         # Both orders should remain in the book
-        orders = await self.matching_engine.get_orders(ContractCode.UK_BL_MAR_25)
+        orders = await self.matching_engine.get_orders(
+            filter=OrderFilter(
+                contract_id=ContractCode.UK_BL_MAR_25,
+            )
+        )
         assert len(orders) == 2
 
     async def test_match_multiple_orders(
@@ -430,7 +451,11 @@ class TestMatchingEngine:
         assert sell_order.remaining_quantity == 5.0
 
         # Both orders should remain in the book
-        orders = await self.matching_engine.get_orders(ContractCode.UK_BL_MAR_25)
+        orders = await self.matching_engine.get_orders(
+            filter=OrderFilter(
+                contract_id=ContractCode.UK_BL_MAR_25,
+            )
+        )
         assert len(orders) == 2
 
         filled_buy_order = await self.matching_engine.get_order(
@@ -499,5 +524,9 @@ class TestMatchingEngine:
         assert filled_sell_order.remaining_quantity == 5.0
 
         # Both orders should remain in the book
-        orders = await self.matching_engine.get_orders(ContractCode.UK_BL_MAR_25)
+        orders = await self.matching_engine.get_orders(
+            filter=OrderFilter(
+                contract_id=ContractCode.UK_BL_MAR_25,
+            )
+        )
         assert len(orders) == 2
