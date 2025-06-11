@@ -12,6 +12,7 @@ from ctenex.domain.order_book.order.schemas import (
 
 class BasicOrdersGenerator(IOrdersGenerator):
     RANDOM_TICKS_FACTOR = 3  # TODO: increase complexity
+    MIN_PROFIT_TICKS = 1  # Minimum number of ticks we want to profit from spread
 
     def generate_orders(
         self,
@@ -38,7 +39,7 @@ class BasicOrdersGenerator(IOrdersGenerator):
                 matching_side = OrderSide.SELL if randrange(2) == 0 else OrderSide.BUY
                 order_price = price + tick_size * Decimal(
                     randrange(
-                        -BasicOrdersGenerator.RANDOM_TICKS_FACTOR,
+                        BasicOrdersGenerator.MIN_PROFIT_TICKS,
                         BasicOrdersGenerator.RANDOM_TICKS_FACTOR,
                     )
                 )
