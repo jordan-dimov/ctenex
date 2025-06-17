@@ -1,13 +1,12 @@
 import asyncio
 from datetime import datetime
 from decimal import Decimal
-from typing import Callable
 from uuid import UUID
 
 import httpx
 from loguru import logger
 
-from ctenex.bot.orders_generators.basic import orders_generator
+from ctenex.bot.orders_generators.interface import IOrdersGenerator
 from ctenex.domain.entities import OrderSide, OrderType
 from ctenex.domain.order_book.order.schemas import (
     OrderAddRequest,
@@ -26,16 +25,16 @@ BOT_TRADER_ID = UUID("c4adb8ee-1425-4a10-bd10-87dd587670d3")
 class InternalStateError(Exception): ...
 
 
-class MatchingBot:
+class ExchangeBot:
     def __init__(
         self,
         trader_id: UUID,
         contract_id: str,
         base_url: str,
+        orders_generator: IOrdersGenerator,
+        number_of_orders: int = 2,
         poll_interval: float = 1.0,
         poll_size: int = 5,
-        number_of_orders: int = 2,
-        orders_generator: Callable = orders_generator,
     ):
         # Configuration
         self.base_url = base_url
@@ -124,7 +123,7 @@ class MatchingBot:
             )
 
             # Generate orders around the mid-price and considering the spread
-            generated_orders = self.orders_generator(
+            generated_orders = self.orders_generator.generate_orders(
                 contract_id=self.contract_id,
                 trader_id=self.trader_id,
                 number_of_orders=self.number_of_orders,
@@ -166,7 +165,7 @@ class MatchingBot:
             self.spread = abs(self.best_ask - self.best_bid)
 
     async def run(self) -> None:
-        logger.info(f"Starting matching bot for contract {self.contract_id}")
+        logger.info(f"Starting exchange bot for contract {self.contract_id}")
         while True:
             open_orders = await self.get_orders(
                 self.contract_id,
@@ -196,22 +195,3 @@ class MatchingBot:
 
     async def close(self) -> None:
         await self.exchange_client.aclose()
-
-
-async def main():
-    bot = MatchingBot(
-        trader_id=BOT_TRADER_ID,
-        base_url=str(settings.api.base_url),
-        contract_id="UK-BL-MAR-25",
-    )
-    try:
-        await bot.validate_contract_id("UK-BL-MAR-25")
-        await bot.run()
-    except KeyboardInterrupt:
-        logger.info("Bot stopped by user")
-    finally:
-        await bot.close()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
