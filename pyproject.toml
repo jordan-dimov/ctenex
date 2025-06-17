@@ -42,4 +42,4 @@ typer = "^0.15.3"
 [tool.poetry.group.bot.dependencies]
 httpx = "^0.28.1"
 pydantic = "^2.11.4"
-
+aiosqlite = "^0.21.0"
