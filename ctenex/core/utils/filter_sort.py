@@ -47,7 +47,11 @@ class BaseFilterParams(BaseModel):
     def _get_filters(self) -> dict[str, FilterType]:
         return self.model_dump(exclude_none=True, exclude_unset=True)
 
-    def apply_to_statement(self, statement: Select, model: Type[AbstractBase]) -> Select:
+    def apply_to_statement(
+        self,
+        statement: Select,
+        model: Type[AbstractBase],
+    ) -> Select:
         filters = self._get_filters()
 
         table_column_names = list(get_entity_values(model))
