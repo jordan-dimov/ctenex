@@ -40,15 +40,10 @@ class GenericReader(IRead[Entity]):
 
         logger.info(f"Getting one {self.model.__name__} record by filter {filter}")
 
-        filters = filter.get_filters()
-
-        if len(filters) > 1:
+        if filter.total_number_of_filters > 1:
             raise CoreException("Only one filter is allowed for this operation.")
 
-        statement = select(self.model)
-
-        for key, value in filters.items():
-            statement = statement.where(column(key) == value)
+        statement = filter.apply_to_statement(select(self.model), self.model)
 
         async with db() as session:
             result = await session.scalar(statement)
@@ -75,10 +70,7 @@ class GenericReader(IRead[Entity]):
         statement = select(self.model)
 
         if filter:
-            filters = filter.get_filters()
-
-            for key, value in filters.items():
-                statement = statement.where(column(key) == value)
+            statement = filter.apply_to_statement(statement, self.model)
 
         # Apply sorting
         if sort:

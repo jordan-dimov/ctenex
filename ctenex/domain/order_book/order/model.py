@@ -25,4 +25,4 @@ class Order(BaseDomainModel):
     quantity: Decimal
     status: OrderStatus = Field(default=OpenOrderStatus.OPEN)
     remaining_quantity: Decimal | None = Field(default=None)
-    placed_at: datetime = Field(default=datetime.now(UTC))
+    placed_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

@@ -1,8 +1,9 @@
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime
 
+from sqlalchemy import func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.types import TIMESTAMP, UUID, Boolean
+from sqlalchemy.types import TIMESTAMP, UUID, Boolean, DateTime
 
 
 class Base(DeclarativeBase):
@@ -19,14 +20,14 @@ class AbstractBase(Base):
         nullable=False,
     )
     created_at: Mapped[datetime] = mapped_column(
-        type_=TIMESTAMP(timezone=True),
-        default=datetime.now(UTC),
+        # type_=TIMESTAMP(timezone=True),
+        type_=DateTime(timezone=True),
+        server_default=func.now(),
         nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
-        type_=TIMESTAMP(timezone=True),
-        default=datetime.now(UTC),
-        onupdate=datetime.now(UTC),
+        type_=DateTime(timezone=True),
+        server_default=func.now(),
         nullable=False,
     )
     deleted_at: Mapped[datetime] = mapped_column(

@@ -270,8 +270,8 @@ class TestContractsController:
         assert response.json()[0]["location"] == "GB"
         assert response.json()[0]["contract_size"] == "1.00"
         assert response.json()[0]["tick_size"] == "0.01"
-        assert response.json()[0]["start_date"] == "2025-03-01T00:00:00Z"
-        assert response.json()[0]["end_date"] == "2025-03-02T00:00:00Z"
+        assert response.json()[0]["start_date"] == "2025-03-01T00:00:00"
+        assert response.json()[0]["end_date"] == "2025-03-02T00:00:00"
 
     async def test_get_supported_contracts_empty(
         self,

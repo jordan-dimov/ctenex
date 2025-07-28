@@ -2,12 +2,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends
 
+from ctenex.api.middlewares.filter_sort import parse_sorting
 from ctenex.core.db.async_session import AsyncSessionStream, db
 from ctenex.core.db.utils import get_entity_values
+from ctenex.core.utils.filter_sort import SortParams
 from ctenex.domain.entities import OpenOrderStatus
 from ctenex.domain.matching_engine.model import matching_engine
 from ctenex.domain.order_book.contract.reader import contracts_reader
 from ctenex.domain.order_book.contract.schemas import ContractGetResponse
+from ctenex.domain.order_book.model import OrderSortOptions
 from ctenex.domain.order_book.order.model import Order
 from ctenex.domain.order_book.order.reader import OrderFilter
 from ctenex.domain.order_book.order.schemas import (
@@ -36,6 +39,7 @@ async def place_order(
 @router.get("/orders")
 async def get_orders(
     filter: Annotated[OrderFilter, Depends()],
+    sort: Annotated[SortParams, Depends(parse_sorting(OrderSortOptions))],
     limit: int = 10,
     page: int = 1,
 ) -> list[OrderGetResponse]:
@@ -43,6 +47,7 @@ async def get_orders(
         filter=filter,
         page=page,
         limit=limit,
+        sort=sort,
     )
     return [OrderGetResponse(**order.model_dump(exclude_none=True)) for order in orders]
 

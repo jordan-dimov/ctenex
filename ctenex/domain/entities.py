@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 
+from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.schema import ForeignKey
-from sqlalchemy.types import DECIMAL, TIMESTAMP, UUID, String
+from sqlalchemy.types import DECIMAL, UUID, DateTime, String
 
 from ctenex.core.db.base import AbstractBase
 
@@ -86,9 +87,9 @@ class BaseOrder(AbstractBase):
         nullable=False,
     )
     placed_at: Mapped[datetime] = mapped_column(
-        type_=TIMESTAMP(timezone=True),
-        default=datetime.now(UTC),
         nullable=False,
+        type_=DateTime(timezone=True),
+        server_default=func.now(),
         index=True,
     )
 
@@ -110,11 +111,9 @@ class Contract(AbstractBase):
         nullable=False,
     )
     start_date: Mapped[datetime] = mapped_column(
-        type_=TIMESTAMP(timezone=True),
         nullable=False,
     )
     end_date: Mapped[datetime] = mapped_column(
-        type_=TIMESTAMP(timezone=True),
         nullable=False,
     )
     tick_size: Mapped[Decimal] = mapped_column(
@@ -182,8 +181,8 @@ class BaseTrade(AbstractBase):
         nullable=False,
     )
     generated_at: Mapped[datetime] = mapped_column(
-        type_=TIMESTAMP(timezone=True),
-        default=datetime.now(UTC),
+        type_=DateTime(timezone=True),
+        default=func.now,
         nullable=False,
     )
 
@@ -206,9 +205,9 @@ class ProcessedOrder(BaseOrder):
     __abstract__ = True
 
     filled_at: Mapped[datetime] = mapped_column(
-        type_=TIMESTAMP(timezone=True),
-        default=datetime.now(UTC),
+        type_=DateTime(timezone=True),
         nullable=False,
+        server_default=func.now(),
         index=True,
     )
     status: Mapped[OrderStatus] = mapped_column(

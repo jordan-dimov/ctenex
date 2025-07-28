@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from ctenex.core.db.async_session import AsyncSessionStream, get_async_session
 from ctenex.core.db.utils import get_entity_values
+from ctenex.core.utils.filter_sort import SortParams
 from ctenex.domain.contracts import ContractCode
 from ctenex.domain.entities import (
     OpenOrderStatus,
@@ -65,11 +66,13 @@ class MatchingEngine:
         filter: OrderFilter,
         limit: int = 10,
         page: int = 1,
+        sort: SortParams | None = None,
     ) -> list[OrderSchema]:
         return await self.order_book.get_orders(
             filter=filter,
             limit=limit,
             page=page,
+            sort=sort,
         )
 
     async def get_order(

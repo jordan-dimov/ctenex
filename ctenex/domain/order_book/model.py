@@ -5,11 +5,16 @@ from sqlalchemy import func, select
 
 from ctenex.core.db.async_session import AsyncSessionStream, get_async_session
 from ctenex.core.db.utils import get_entity_values
+from ctenex.core.utils.filter_sort import SortOptions, SortParams
 from ctenex.domain.contracts import ContractCode
 from ctenex.domain.entities import Order, OrderSide, OrderType, ProcessedOrderStatus
 from ctenex.domain.order_book.order.model import Order as OrderSchema
 from ctenex.domain.order_book.order.reader import OrderFilter, orders_reader
 from ctenex.domain.order_book.order.writer import orders_writer
+
+
+class OrderSortOptions(SortOptions):
+    placed_at = "placed_at"
 
 
 class OrderBook:
@@ -27,12 +32,14 @@ class OrderBook:
         filter: OrderFilter,
         limit: int = 10,
         page: int = 1,
+        sort: SortParams | None = None,
     ) -> list[OrderSchema]:
         orders = await self.orders_reader.get_many(
             self.db,
             filter=filter,
             limit=limit,
             page=page,
+            sort=sort,
         )
         return [OrderSchema(**get_entity_values(order)) for order in orders]
 
