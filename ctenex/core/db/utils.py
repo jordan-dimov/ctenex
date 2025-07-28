@@ -1,4 +1,5 @@
 from typing import Type
+
 from sqlalchemy.inspection import inspect
 
 from ctenex.core.db.base import AbstractBase
