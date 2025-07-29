@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy import Select, column
 
 from ctenex.core.db.base import AbstractBase
-from ctenex.core.db.utils import get_entity_values
+from ctenex.core.db.utils import get_entity_fields
 
 # Filtering
 
@@ -54,7 +54,7 @@ class BaseFilterParams(BaseModel):
     ) -> Select:
         filters = self._get_filters()
 
-        table_column_names = list(get_entity_values(model))
+        table_column_names = get_entity_fields(model)
 
         # Get timestamp keys
         timestamp_column_names = [
