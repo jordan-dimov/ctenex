@@ -6,7 +6,7 @@ from uuid import UUID
 import httpx
 from loguru import logger
 
-from ctenex.bot.orders_generators.interface import IOrdersGenerator
+from ctenex.bot.bots.basic.market_maker.orders_generator import BasicOrdersGenerator
 from ctenex.domain.entities import OrderSide, OrderType
 from ctenex.domain.order_book.order.schemas import (
     OrderAddRequest,
@@ -19,19 +19,12 @@ from ctenex.utils.contracts import validate_contract_id
 settings = get_app_settings()
 
 
-BOT_TRADER_ID = UUID("c4adb8ee-1425-4a10-bd10-87dd587670d3")
-
-
-class InternalStateError(Exception): ...
-
-
 class ExchangeBot:
     def __init__(
         self,
         trader_id: UUID,
         contract_id: str,
         base_url: str,
-        orders_generator: IOrdersGenerator,
         number_of_orders: int = 2,
         poll_interval: float = 1.0,
         poll_size: int = 5,
@@ -46,7 +39,7 @@ class ExchangeBot:
 
         # Dependencies
         self.exchange_client = httpx.AsyncClient(base_url=base_url)
-        self.orders_generator = orders_generator
+        self.orders_generator = BasicOrdersGenerator()
 
         # State
         self.last_processed_order_timestamp: datetime = datetime.now()
@@ -139,7 +132,7 @@ class ExchangeBot:
                     await self.place_order(generated_order)
                     self.last_processed_order_timestamp = datetime.now()
                 except Exception as e:
-                    logger.error(f"Failed to place matching order: {e}")
+                    logger.error(f"Failed to place order: {e}")
 
     def update_state(
         self,

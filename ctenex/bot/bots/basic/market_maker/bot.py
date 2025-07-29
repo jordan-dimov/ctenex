@@ -4,10 +4,9 @@ from uuid import UUID
 from loguru import logger
 
 from ctenex.bot.bots.basic.exchange_bot import ExchangeBot
-from ctenex.bot.bots.basic.market_maker.orders_generator import BasicOrdersGenerator
-from ctenex.settings.application import get_app_settings
+from ctenex.bot.settings.bot import get_bot_settings
 
-settings = get_app_settings()
+settings = get_bot_settings()
 
 BOT_TRADER_ID = UUID("135bb461-9b00-44eb-abe6-34a67ca9031e")
 
@@ -15,9 +14,8 @@ BOT_TRADER_ID = UUID("135bb461-9b00-44eb-abe6-34a67ca9031e")
 async def main():
     bot = ExchangeBot(
         trader_id=BOT_TRADER_ID,
-        base_url=str(settings.api.base_url),
+        base_url=str(settings.exchange_api.base_url),
         contract_id="UK-BL-MAR-25",
-        orders_generator=BasicOrdersGenerator(),
     )
     try:
         await bot.validate_contract_id("UK-BL-MAR-25")
