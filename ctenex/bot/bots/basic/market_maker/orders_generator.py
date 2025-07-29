@@ -2,7 +2,6 @@ from decimal import Decimal
 from random import randrange
 from uuid import UUID
 
-from ctenex.bot.orders_generators.interface import IOrdersGenerator
 from ctenex.domain.order_book.order.schemas import (
     OrderAddRequest,
     OrderSide,
@@ -10,7 +9,7 @@ from ctenex.domain.order_book.order.schemas import (
 )
 
 
-class BasicOrdersGenerator(IOrdersGenerator):
+class BasicOrdersGenerator:
     RANDOM_TICKS_FACTOR = 2  # Stay close to mid-price
     MIN_PROFIT_TICKS = 1  # Minimum number of ticks we want to profit from spread
 

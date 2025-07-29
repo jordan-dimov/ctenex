@@ -3,8 +3,8 @@ from uuid import UUID
 
 from loguru import logger
 
-from ctenex.bot.exchange_bot import ExchangeBot
-from ctenex.bot.orders_generators.basic import BasicOrdersGenerator
+from ctenex.bot.bots.basic.exchange_bot import ExchangeBot
+from ctenex.bot.bots.basic.market_maker.orders_generator import BasicOrdersGenerator
 from ctenex.settings.application import get_app_settings
 
 settings = get_app_settings()
