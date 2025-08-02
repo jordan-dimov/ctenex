@@ -27,15 +27,8 @@ def place_order(
     """Place a new order through the exchange API."""
     base_url = str(settings.api.base_url)
 
-    contracts = validate_contract_id(contract_id, base_url)
-
-    tick_size = next(
-        (c.tick_size for c in contracts if c.contract_id == contract_id), None
-    )
-
-    if tick_size is None:
-        typer.echo(f"Error: Contract ID '{contract_id}' is not supported")
-        raise typer.Exit(1)
+    contract = validate_contract_id(contract_id, base_url)
+    tick_size = contract.tick_size
 
     # Convert float price to Decimal with 2 decimal places precision
     price_decimal = Decimal(str(price)).quantize(

@@ -51,12 +51,9 @@ class ExchangeBot:
         self.tick_size: Decimal = Decimal(0.00)
         self.spread: Decimal = Decimal(0.00)
 
-    async def validate_contract_id(self, contract_id: str) -> None:
-        contracts = validate_contract_id(contract_id, self.base_url)
-        self.tick_size = next(
-            (c.tick_size for c in contracts if c.contract_id == contract_id),
-            Decimal(0.00),
-        )
+    async def validate_contract_id(self) -> None:
+        contract = validate_contract_id(self.contract_id, self.base_url)
+        self.tick_size = contract.tick_size
 
     async def get_orders(self, contract_id: str, status: str) -> list[OrderGetResponse]:
         logger.info(f"Polling {status} orders for contract {contract_id}")

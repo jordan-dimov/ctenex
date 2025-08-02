@@ -5,7 +5,7 @@ from ctenex.domain.exceptions import InvalidContractIdError
 from ctenex.domain.order_book.contract.schemas import ContractGetResponse
 
 
-def validate_contract_id(contract_id: str, base_url: str) -> list[ContractGetResponse]:
+def validate_contract_id(contract_id: str, base_url: str) -> ContractGetResponse:
     # Validate contract ID exists
     try:
         with httpx.Client() as client:
@@ -13,7 +13,12 @@ def validate_contract_id(contract_id: str, base_url: str) -> list[ContractGetRes
             response.raise_for_status()
             supported_contracts = response.json()
 
-            if contract_id not in [c["contract_id"] for c in supported_contracts]:
+            valid_contract = next(
+                (c for c in supported_contracts if c["contract_id"] == contract_id),
+                None,
+            )
+
+            if not valid_contract:
                 logger.error(f"Error: Contract ID '{contract_id}' is not supported")
                 raise InvalidContractIdError(
                     f"Contract ID '{contract_id}' is not supported"
@@ -22,5 +27,4 @@ def validate_contract_id(contract_id: str, base_url: str) -> list[ContractGetRes
         logger.error(f"Error validating contract ID: {str(e)}")
         raise InvalidContractIdError(f"Error validating contract ID: {str(e)}")
 
-    # supported_contracts.
-    return [ContractGetResponse(**c) for c in supported_contracts]
+    return ContractGetResponse(**valid_contract)

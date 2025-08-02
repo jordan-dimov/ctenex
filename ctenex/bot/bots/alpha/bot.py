@@ -3,12 +3,12 @@ from uuid import UUID
 
 from loguru import logger
 
-from ctenex.bot.bots.basic.exchange_bot import ExchangeBot
+from ctenex.bot.bots.alpha.exchange_bot import ExchangeBot
 from ctenex.bot.settings.bot import get_bot_settings
 
 settings = get_bot_settings()
 
-BOT_TRADER_ID = UUID("135bb461-9b00-44eb-abe6-34a67ca9031e")
+BOT_TRADER_ID = UUID("208384fa-4a29-46a4-a24b-8b11c8f278f3")
 
 
 async def main():
