@@ -28,17 +28,32 @@ class ExchangeBot:
         trader_id: UUID,
         contract_id: str,
         base_url: str,
-        number_of_orders: int = 2,
         sample_interval_in_ms: Decimal = Decimal(1000.0),
         base_drift_in_ms: Decimal = Decimal(1100.0),
     ):
+        """
+        Args:
+            trader_id: The trader ID.
+            contract_id: The contract ID.
+            base_url: The base URL of the exchange.
+            sample_interval_in_ms: The interval between samples.
+            base_drift_in_ms: The base drift in milliseconds.
+
+        The sample interval is a fixed time interval used to filter the orders when querying.
+        Each query issued fetches orders placed within the sample interval. This is effectively
+        used to calculate the value for the `placed_before` filter from the value of the
+        `placed_at_or_after` filter.
+
+        The base drift is the difference between the real time at which an orders query is issued and
+        the time used to filter orders (i.e. the value used for the `placed_at_or_after` filter).
+        """
+
         # Configuration
         self.base_url = base_url
         self.trader_id = trader_id
         self.contract_id = contract_id
         self.sample_interval_in_ms = sample_interval_in_ms
         self.base_drift_in_ms = base_drift_in_ms
-        self.number_of_orders = number_of_orders
         self.last_processed_order_timestamp: datetime = datetime.now(timezone.utc)
 
         # Dependencies
@@ -54,6 +69,15 @@ class ExchangeBot:
         start_time: datetime | None = None,
         end_time: datetime | None = None,
     ) -> list[OrderGetResponse]:
+        """
+        Get the orders for the given contract.
+
+        Args:
+            contract_id: The contract ID.
+            start_time: The start time of the interval.
+            end_time: The end time of the interval.
+        """
+
         query_parameters = {
             "contract_id": contract_id,
             "sort_by": "placed_at",
@@ -72,6 +96,13 @@ class ExchangeBot:
         return [OrderGetResponse(**order) for order in response.json()]
 
     async def place_order(self, order: OrderAddRequest) -> OrderAddResponse:
+        """
+        Place an order on the exchange.
+
+        Args:
+            order: The order to place.
+        """
+
         response = await self.exchange_client.post(
             url="/v1/stateless/orders", json=order.model_dump(mode="json")
         )
@@ -85,8 +116,13 @@ class ExchangeBot:
         session_stream: AsyncSessionStream,
     ) -> ProcessingResult:
         """
-        Orders should be sorted by placed_at in ascending order.
+        Process the orders for the given contract.
+
+        Args:
+            orders: The orders to process (sorted by `placed_at` in ascending order).
+            session_stream: A session stream to persist the state changes.
         """
+
         processing_result = ProcessingResult(
             number_of_orders_processed=0,
             last_processed_order_timestamp=None,
@@ -242,6 +278,10 @@ class ExchangeBot:
 def min_and_max_price_for_limit_orders(
     orders: list[OrderGetResponse],
 ) -> tuple[Decimal, Decimal]:
+    """
+    Calculate the minimum and maximum price from the limit orders.
+    """
+
     limit_bids = [
         order.price
         for order in orders
