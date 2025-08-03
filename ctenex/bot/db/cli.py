@@ -5,8 +5,6 @@ from aiosqlite import connect
 
 from ctenex.bot.utils.async_typer import AsyncTyper
 
-DbSchemaAction = Literal["setup", "teardown"]
-
 
 async def apply_schema_action(
     bot_name: str,

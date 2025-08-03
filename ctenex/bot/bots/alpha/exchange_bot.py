@@ -5,6 +5,7 @@ from uuid import UUID
 
 import httpx
 from loguru import logger
+from pydantic import BaseModel
 from sqlalchemy import text
 
 from ctenex.bot.db.async_session import AsyncSessionStream, db
@@ -16,6 +17,11 @@ from ctenex.domain.order_book.order.schemas import (
 from ctenex.utils.contracts import validate_contract_id
 
 
+class ProcessingResult(BaseModel):
+    number_of_orders_processed: int
+    last_processed_order_timestamp: datetime | None = None
+
+
 class ExchangeBot:
     def __init__(
         self,
@@ -23,15 +29,15 @@ class ExchangeBot:
         contract_id: str,
         base_url: str,
         number_of_orders: int = 2,
-        sample_interval: Decimal = Decimal(1000.0),  # ms
-        poll_interval: Decimal = Decimal(1000.0),  # ms
+        sample_interval_in_ms: Decimal = Decimal(1000.0),
+        base_drift_in_ms: Decimal = Decimal(1100.0),
     ):
         # Configuration
         self.base_url = base_url
         self.trader_id = trader_id
         self.contract_id = contract_id
-        self.sample_interval = sample_interval
-        self.poll_interval = poll_interval
+        self.sample_interval_in_ms = sample_interval_in_ms
+        self.base_drift_in_ms = base_drift_in_ms
         self.number_of_orders = number_of_orders
         self.last_processed_order_timestamp: datetime = datetime.now(timezone.utc)
 
@@ -48,9 +54,6 @@ class ExchangeBot:
         start_time: datetime | None = None,
         end_time: datetime | None = None,
     ) -> list[OrderGetResponse]:
-        # TODO: Validate both start_time and end_time are provided
-        logger.debug(f"Getting orders for contract {contract_id}")
-
         query_parameters = {
             "contract_id": contract_id,
             "sort_by": "placed_at",
@@ -80,96 +83,71 @@ class ExchangeBot:
         self,
         orders: list[OrderGetResponse],
         session_stream: AsyncSessionStream,
-    ) -> None:
+    ) -> ProcessingResult:
         """
         Orders should be sorted by placed_at in ascending order.
         """
+        processing_result = ProcessingResult(
+            number_of_orders_processed=0,
+            last_processed_order_timestamp=None,
+        )
 
         if not orders:
             logger.debug(f"No orders to process for contract {self.contract_id}")
-            return
-        logger.debug(f"Processing {len(orders)} orders for contract {self.contract_id}")
+            return processing_result
 
-        sample_start_time = orders[0].placed_at
-        sample_interval_in_seconds = self.sample_interval / 1000
+        first_order_timestamp = orders[0].placed_at
+        last_order_timestamp = orders[-1].placed_at
 
-        if len(orders) == 1:
-            total_interval_in_seconds = Decimal(1)
-            number_of_samples = 1
-            sample_end_time = sample_start_time + timedelta(
-                seconds=int(sample_interval_in_seconds)
-            )
-        else:
-            total_interval_in_seconds = Decimal(
-                str((orders[-1].placed_at - orders[0].placed_at).total_seconds())
-            )
-            number_of_samples = int(
-                total_interval_in_seconds / sample_interval_in_seconds
-            )
-            sample_end_time = orders[-1].placed_at
+        logger.debug(
+            f"Processing {len(orders)} orders for contract {self.contract_id}. "
+            f"Batch interval: [{first_order_timestamp} - {last_order_timestamp}]"
+        )
 
         price_moments = []
 
-        for _ in range(number_of_samples):
-            logger.info(
-                f"Number of samples for interval [{sample_start_time} - {sample_end_time}] seconds: {number_of_samples}"
-            )
+        # Calculate best bid and ask
+        best_bid, best_ask = min_and_max_price_for_limit_orders(orders)
 
-            sample_orders = [
-                order
+        # Assume market orders have an effective price equal to the best bid or ask
+        # TODO: Check if this assumption is correct
+        for order in orders:
+            if order.type == "market":
+                order.price = best_bid if order.side == "buy" else best_ask
+
+        # Calculate volume and price based on the sample interval
+        sample_volume = sum(order.quantity for order in orders)
+        sample_price = (
+            sum(
+                order.price * order.quantity
                 for order in orders
-                if order.placed_at >= sample_start_time
-                and order.placed_at < sample_end_time
-            ]
-
-            if not sample_orders:
-                continue
-
-            # Calculate best bid and ask
-            sample_best_bid, sample_best_ask = min_and_max_price_for_limit_orders(
-                sample_orders
+                if order.price is not None
             )
+            / sample_volume
+        )
 
-            # Assume market orders have an effective price equal to the best bid or ask
-            # TODO: Check if this is correct
-            for order in sample_orders:
-                if order.type == "market":
-                    order.price = (
-                        sample_best_bid if order.side == "buy" else sample_best_ask
-                    )
+        price_moments = {
+            "timestamp": first_order_timestamp,
+            "price": float(sample_price),
+            "volume": float(sample_volume),
+            "best_bid": float(best_bid),
+            "best_ask": float(best_ask),
+        }
 
-            # Calculate volume and price based on the sample interval
-            sample_volume = sum(order.quantity for order in sample_orders)
-            sample_price = (
-                sum(
-                    order.price * order.quantity
-                    for order in sample_orders
-                    if order.price is not None
-                )
-                / sample_volume
-            )
+        await self.update_state(
+            session_stream=session_stream,
+            price_moments=price_moments,
+        )
 
-            price_moments = {
-                "timestamp": sample_start_time,
-                "price": float(sample_price),
-                "volume": float(sample_volume),
-                "best_bid": float(sample_best_bid),
-                "best_ask": float(sample_best_ask),
-            }
+        processing_result.number_of_orders_processed = len(orders)
+        processing_result.last_processed_order_timestamp = last_order_timestamp
 
-            sample_start_time = sample_start_time + timedelta(
-                seconds=int(sample_interval_in_seconds)
-            )
+        logger.info(
+            f"Processed {processing_result.number_of_orders_processed} orders for contract {self.contract_id}. "
+            f"Interval: [{first_order_timestamp} - {last_order_timestamp}]"
+        )
 
-            if not price_moments:
-                logger.info("No price moments to trigger state update")
-                continue
-
-            await self.update_state(
-                session_stream=session_stream,
-                price_moments=price_moments,
-            )
-        logger.info(f"Processed {len(orders)} orders for contract {self.contract_id}")
+        return processing_result
 
     async def update_state(
         self,
@@ -208,39 +186,54 @@ class ExchangeBot:
     async def run(self) -> None:
         logger.info(f"Starting exchange bot for contract {self.contract_id}")
 
-        poll_interval_in_seconds = self.poll_interval / 1000
-
-        start_time = self.last_processed_order_timestamp
-        end_time = datetime.now(timezone.utc)
-
-        orders_in_exchange = await self.get_orders(
-            contract_id=self.contract_id,
-            start_time=start_time,
-            end_time=end_time,
+        current_timestamp = datetime.now(timezone.utc)
+        start_timestamp = current_timestamp - timedelta(
+            milliseconds=int(self.base_drift_in_ms)
+        )
+        end_timestamp = start_timestamp + timedelta(
+            milliseconds=int(self.sample_interval_in_ms)
         )
 
-        # For audit only
-        if orders_in_exchange:
-            self.last_processed_order_timestamp = orders_in_exchange[-1].placed_at
+        logger.debug(
+            f"Getting orders for interval [{start_timestamp} - {end_timestamp}]"
+        )
+        orders_in_exchange = await self.get_orders(
+            contract_id=self.contract_id,
+            start_time=start_timestamp,
+            end_time=end_timestamp,
+        )
 
         while True:
-            logger.debug(
-                f"Orders in exchange until {self.last_processed_order_timestamp}: {len(orders_in_exchange)}"
-            )
             await self.process_orders(orders=orders_in_exchange, session_stream=db())
-            await asyncio.sleep(int(poll_interval_in_seconds))
 
-            end_time = datetime.now(timezone.utc)
+            current_timestamp = datetime.now(timezone.utc)
 
+            start_timestamp = end_timestamp
+            end_timestamp = start_timestamp + timedelta(
+                milliseconds=int(self.sample_interval_in_ms)
+            )
+            drift_error_in_ms = (current_timestamp - start_timestamp) / timedelta(
+                milliseconds=1
+            )
+
+            ### Use the error to adjust the period and keep the drift constant
+            real_drift_in_ms = int(self.base_drift_in_ms) - drift_error_in_ms
+            adjusted_period_in_millis = real_drift_in_ms - drift_error_in_ms
+            # logger.debug(
+            #     f"Real drift in ms: {real_drift_in_ms}. "
+            #     f"Drift error in ms: {drift_error_in_ms}. "
+            #     f"Adjusted period in ms: {adjusted_period_in_millis}"
+            # )
+            await asyncio.sleep(adjusted_period_in_millis / 1000)
+
+            logger.debug(
+                f"Getting orders for interval [{start_timestamp} - {end_timestamp}]"
+            )
             orders_in_exchange = await self.get_orders(
                 contract_id=self.contract_id,
-                start_time=start_time,
-                end_time=end_time,
+                start_time=start_timestamp,
+                end_time=end_timestamp,
             )
-
-            # For audit only
-            if orders_in_exchange:
-                self.last_processed_order_timestamp = orders_in_exchange[-1].placed_at
 
     async def close(self) -> None:
         await self.exchange_client.aclose()

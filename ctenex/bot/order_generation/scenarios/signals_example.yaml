@@ -1,0 +1,227 @@
+scenario:
+  description: "Example scenario to showcase the alpha bot strategy - generates price moments from seed.sql"
+  orders:
+    # Initial orders to establish the market around 112.60
+    - id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "d0b9e35c-2fc2-44e8-9af3-2a201e76730f"
+      side: "sell"
+      type: "limit"
+      price: 112.85
+      quantity: 30.0
+      placed_at_absolute_timedelta_in_ms: 0
+
+    - id: "550e8400-e29b-41d4-a716-446655440000"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "a15125d8-224a-4c69-b183-b48220dc73f4"
+      side: "sell"
+      type: "limit"
+      price: 112.75
+      quantity: 25.0
+      placed_at_absolute_timedelta_in_ms: 100
+
+    - id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "9ea8bf32-7c99-4fed-8a4f-e8902c8797dc"
+      side: "sell"
+      type: "limit"
+      price: 112.65
+      quantity: 20.0
+      placed_at_absolute_timedelta_in_ms: 150
+
+    - id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "395ae1b8-baf4-41b0-9205-c4cbe571bea7"
+      side: "buy"
+      type: "limit"
+      price: 112.55
+      quantity: 35.0
+      placed_at_absolute_timedelta_in_ms: 250
+
+    - id: "6ba7b812-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "70456a46-a402-45e9-a272-44f2c025ef39"
+      side: "buy"
+      type: "limit"
+      price: 112.45
+      quantity: 30.0
+      placed_at_absolute_timedelta_in_ms: 500
+
+    - id: "6ba7b813-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "d5e96c42-6492-4ff9-a8b2-8691e849d55e"
+      side: "buy"
+      type: "limit"
+      price: 112.35
+      quantity: 25.0
+      placed_at_absolute_timedelta_in_ms: 700
+
+    # Trade 1: 12:00:01 - Price: 112.60, Volume: 32.0
+    - id: "6ba7b814-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "81b7f6ab-7a69-4c38-ba83-51e3e788ff0a"
+      side: "buy"
+      type: "market"
+      price: 112.65
+      quantity: 32.0
+      placed_at_absolute_timedelta_in_ms: 1000
+
+    # Trade 2: 12:00:02 - Price: 112.40, Volume: 34.0
+    - id: "6ba7b815-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "41253b3f-9923-4d00-88a2-d14ac6ea6240"
+      side: "sell"
+      type: "market"
+      price: 112.35
+      quantity: 34.0
+      placed_at_absolute_timedelta_in_ms: 2000
+
+    # Trade 3: 12:00:03 - Price: 110.80, Volume: 50.0
+    - id: "6ba7b816-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "cc5ebef7-8751-4f2b-82ae-68f3abe83fc2"
+      side: "sell"
+      type: "market"
+      price: 110.75
+      quantity: 50.0
+      placed_at_absolute_timedelta_in_ms: 3000
+
+    # Trade 4: 12:00:04 - Price: 112.20, Volume: 36.0
+    - id: "6ba7b817-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "98fe60bc-7d82-4929-9c99-ae02fc2956e6"
+      side: "buy"
+      type: "market"
+      price: 112.25
+      quantity: 36.0
+      placed_at_absolute_timedelta_in_ms: 4000
+
+    # Trade 5: 12:00:05 - Price: 112.00, Volume: 38.0
+    - id: "6ba7b818-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "ba0a5aa3-2d71-40a5-9151-59d694fdff85"
+      side: "sell"
+      type: "market"
+      price: 111.95
+      quantity: 38.0
+      placed_at_absolute_timedelta_in_ms: 5000
+
+    # Trade 6: 12:00:06 - Price: 110.00, Volume: 58.0
+    - id: "6ba7b819-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "f3586e3f-63bc-40a4-91c5-53fb0ad2415c"
+      side: "sell"
+      type: "market"
+      price: 109.95
+      quantity: 58.0
+      placed_at_absolute_timedelta_in_ms: 6000
+
+    # Trade 7: 12:00:07 - Price: 111.80, Volume: 40.0
+    - id: "6ba7b81a-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "00929aed-7d68-4670-a53d-834220ee6eee"
+      side: "buy"
+      type: "market"
+      price: 111.85
+      quantity: 40.0
+      placed_at_absolute_timedelta_in_ms: 7000
+
+    # Trade 8: 12:00:08 - Price: 111.60, Volume: 42.0
+    - id: "6ba7b81b-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "79bfa73a-8910-4155-ab58-89ca84ee6ec8"
+      side: "sell"
+      type: "market"
+      price: 111.55
+      quantity: 42.0
+      placed_at_absolute_timedelta_in_ms: 8000
+
+    # Trade 9: 12:00:09 - Price: 112.80, Volume: 30.0
+    - id: "6ba7b81c-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "a15125d8-224a-4c69-b183-b48220dc73f4"
+      side: "buy"
+      type: "market"
+      price: 112.85
+      quantity: 30.0
+      placed_at_absolute_timedelta_in_ms: 9000
+
+    # Trade 10: 12:00:10 - Price: 111.40, Volume: 44.0
+    - id: "6ba7b81d-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "c453b300-2049-4270-b5b2-b29e29eb43ea"
+      side: "buy"
+      type: "market"
+      price: 111.45
+      quantity: 44.0
+      placed_at_absolute_timedelta_in_ms: 10000
+
+    # Trade 11: 12:00:11 - Price: 111.20, Volume: 46.0
+    - id: "6ba7b81e-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "af552c53-49b6-43ac-8b60-c16960419372"
+      side: "sell"
+      type: "market"
+      price: 111.15
+      quantity: 46.0
+      placed_at_absolute_timedelta_in_ms: 11000
+
+    # Trade 12: 12:00:12 - Price: 111.00, Volume: 48.0
+    - id: "6ba7b81f-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "c50116de-0f26-4e13-ad21-b2bb16dd861d"
+      side: "buy"
+      type: "market"
+      price: 111.05
+      quantity: 48.0
+      placed_at_absolute_timedelta_in_ms: 12000
+
+    # Trade 13: 12:00:13 - Price: 110.60, Volume: 52.0
+    - id: "6ba7b820-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "e306ca80-d6a8-4daa-8c4d-d5f6e2577f94"
+      side: "buy"
+      type: "market"
+      price: 110.65
+      quantity: 52.0
+      placed_at_absolute_timedelta_in_ms: 13000
+
+    # Trade 14: 12:00:14 - Price: 110.40, Volume: 54.0
+    - id: "6ba7b821-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "5fe5fce2-d8bd-4f84-b106-1fd2665ba4e3"
+      side: "sell"
+      type: "market"
+      price: 110.35
+      quantity: 54.0
+      placed_at_absolute_timedelta_in_ms: 14000
+
+    # Trade 15: 12:00:15 - Price: 110.20, Volume: 56.0
+    - id: "6ba7b822-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d"
+      side: "buy"
+      type: "market"
+      price: 110.25
+      quantity: 56.0
+      placed_at_absolute_timedelta_in_ms: 15000
+
+    # Trade 16: 12:00:16 - Price: 109.70, Volume: 60.0
+    - id: "6ba7b823-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "d0038d6f-0f85-4787-88fe-e232c6fb8835"
+      side: "buy"
+      type: "market"
+      price: 109.75
+      quantity: 60.0
+      placed_at_absolute_timedelta_in_ms: 16000
+
+    # Trade 17: 12:00:17 - Price: 109.40, Volume: 62.0
+    - id: "6ba7b824-9dad-11d1-80b4-00c04fd430c8"
+      contract_id: "POWER-BL-2025-06-18"
+      trader_id: "545ad1a8-4484-4803-9bf2-99931722c50c"
+      side: "sell"
+      type: "market"
+      price: 109.35
+      quantity: 62.0
+      placed_at_absolute_timedelta_in_ms: 17000
