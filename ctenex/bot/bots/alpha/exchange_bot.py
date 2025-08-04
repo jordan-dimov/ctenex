@@ -143,7 +143,7 @@ class ExchangeBot:
         price_moments = []
 
         # Calculate best bid and ask
-        best_bid, best_ask = min_and_max_price_for_limit_orders(orders)
+        best_bid, best_ask = best_bid_and_ask_for_limit_orders(orders)
 
         # Assume market orders have an effective price equal to the best bid or ask
         # TODO: Check if this assumption is correct
@@ -275,7 +275,7 @@ class ExchangeBot:
         await self.exchange_client.aclose()
 
 
-def min_and_max_price_for_limit_orders(
+def best_bid_and_ask_for_limit_orders(
     orders: list[OrderGetResponse],
 ) -> tuple[Decimal, Decimal]:
     """
@@ -293,7 +293,7 @@ def min_and_max_price_for_limit_orders(
         if order.type == "limit" and order.side == "sell" and order.price is not None
     ]
 
-    min_limit_bid = min(limit_bids) if limit_bids else Decimal(0.00)
-    max_limit_ask = max(limit_asks) if limit_asks else Decimal(0.00)
+    best_bid = max(limit_bids) if limit_bids else Decimal(0.00)
+    best_ask = min(limit_asks) if limit_asks else Decimal(0.00)
 
-    return min_limit_bid, max_limit_ask
+    return best_bid, best_ask
